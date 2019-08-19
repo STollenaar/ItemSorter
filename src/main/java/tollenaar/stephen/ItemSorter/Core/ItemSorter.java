@@ -17,6 +17,7 @@ public class ItemSorter extends JavaPlugin {
 
 	private Database database;
 	private FileConfiguration config;
+	private static Javalin app;
 	
 	@Override
 	public void onEnable() {
@@ -30,42 +31,40 @@ public class ItemSorter extends JavaPlugin {
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(new SignHandler(database), this);
 		pm.registerEvents(new HopperHandler(database), this);
-		
+
 		startWebServer();
 	}
 
 	@Override
 	public void onDisable() {
-
+		app.stop();
 	}
-	
-	 private static void addSoftwareLibrary(File file) throws Exception {
-	        Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
-	        method.setAccessible(true);
-	        method.invoke(ClassLoader.getSystemClassLoader(), new Object[]{file.toURI().toURL()});
-	    }
-	
-    public void startWebServer() {
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
 
-        try {
-            addSoftwareLibrary(
-                    new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator + "websocket-server-9.4.20.v20190813.jar"
-                    ));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+	private static void addSoftwareLibrary(File file) throws Exception {
+		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+		method.setAccessible(true);
+		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
+	}
 
-        URL[] urls = ((URLClassLoader)cl).getURLs();
+	public void startWebServer() {
+		ClassLoader cl = ClassLoader.getSystemClassLoader();
 
-        for(URL url: urls){
-            System.out.println(url.getFile());
-        }
+		try {
+			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
+					+ "websocket-server-9.4.20.v20190813.jar"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
-        Javalin app = Javalin.create().start(config.getInt("port"));
-        app.get("/", ctx -> ctx.result("Hello World"));
-        Thread.currentThread().setContextClassLoader(classLoader);
-    }
+		URL[] urls = ((URLClassLoader) cl).getURLs();
+
+		for (URL url : urls) {
+			System.out.println(url.getFile());
+		}
+
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
+		app = Javalin.create(config -> config.addStaticFiles("/extracted/web")).start(config.getInt("port"));
+		Thread.currentThread().setContextClassLoader(classLoader);
+	}
 }
