@@ -65,6 +65,12 @@ public class ItemSorter extends JavaPlugin {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
 		app = Javalin.create(config -> config.addStaticFiles("/extracted/web")).start(config.getInt("port"));
+			
+	       app.post("/postHopperConfig", ctx -> {
+	    	   	ctx.attribute("responseCode", "987");
+	            ctx.render("/extracted/web/postHopperConfig.html");
+	        });
+		
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 }

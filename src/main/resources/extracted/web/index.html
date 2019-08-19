@@ -1,1 +1,35 @@
-Hello World!
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Hopper Configuration></title>
+    <link rel="stylesheet" href="/css/tabs.css">
+    <script src="js/tabs.js"></script>
+</head>
+
+<body>
+    <!-- Tab links -->
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">HopperAccepting</button>
+    </div>
+
+    <!-- Tab content -->
+    <form method="POST" action="/postHopperConfig">
+        <div id="HopperInput" class="tabcontent">
+            <h3>Select all the blocks the hopper will accept</h3>
+        </div>
+        <button>Submit Config</button>
+    </form>
+
+
+    <script>
+        function get(name) {
+            if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+                return decodeURIComponent(name[1]);
+        }
+
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+    </script>
+</body>
+
+</html>
