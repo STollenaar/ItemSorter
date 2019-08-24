@@ -1,24 +1,39 @@
 package tollenaar.stephen.ItemSorter.Core;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+
 import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
-import tollenaar.stephen.ItemSorter.Events.SignHandler;
+import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 
 public class ItemSorter extends JavaPlugin {
 
-	private Database database;
+	public Database database;
 	private FileConfiguration config;
 	private static Javalin app;
-	
+	private static List<Item> minecraftItems;
+
 	@Override
 	public void onEnable() {
 		config = this.getConfig();
@@ -29,8 +44,31 @@ public class ItemSorter extends JavaPlugin {
 
 		// registering events
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvents(new SignHandler(database), this);
+		pm.registerEvents(new HopperInteractHandler(this), this);
 		pm.registerEvents(new HopperHandler(database), this);
+
+		try {
+			// getting all the items in minecraft and processing them into a
+			// java object
+			File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
+			File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
+			ZipFile jar = new ZipFile(plugin);
+			ZipEntry entry = jar.getEntry("web/items.json");
+
+			Type ITEM_TYPE = new TypeToken<List<Item>>() {
+			}.getType();
+			Gson gson = new Gson();
+
+			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
+			minecraftItems = gson.fromJson(reader, ITEM_TYPE);
+			reader.close();
+			jar.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			// disbling this server
+			getServer().getPluginManager().disablePlugin(this);
+			return;
+		}
 
 		startWebServer();
 	}
@@ -64,13 +102,18 @@ public class ItemSorter extends JavaPlugin {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
-		app = Javalin.create(config -> config.addStaticFiles("/extracted/web")).start(config.getInt("port"));
-			
-	       app.post("/postHopperConfig", ctx -> {
-	    	   	ctx.attribute("responseCode", "987");
-	            ctx.render("/extracted/web/postHopperConfig.html");
-	        });
-		
+		app = Javalin.create(config -> config.addStaticFiles("/web")).start(config.getInt("port"));
+
+		app.post("/" + config.getString("postConfigResponse"), ctx -> {
+			ctx.render("/web/response.html");
+		});
+
+		app.get("/" + config.getString("initialPageResponse"), ctx -> {
+			ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
+			ctx.attribute("items", minecraftItems);
+			ctx.render("/web/index.html");
+		});
+
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 }

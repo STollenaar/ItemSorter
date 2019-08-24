@@ -1,1 +1,4 @@
 port: 7000
+URL: "http://localhost"
+postConfigResponse: 'postHopperConfig'
+initialPageResponse: 'HopperConfig'

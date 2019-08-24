@@ -1,0 +1,82 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Hopper Configuration></title>
+    <link rel="stylesheet" type="text/css" href="./css/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="./css/options.css" />
+    <script src="./js/tabs.js"></script>
+    <script src="./js/search.js"></script>
+</head>
+
+<body>
+    <div style="width: 50%; margin:auto; text-align: center">
+
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">HopperAccepting</button>
+        </div>
+
+
+        <form method="POST" th:action="${postAction}">
+            <div id="HopperInput" class="tabcontent">
+                <h2>Select all the blocks the hopper will accept</h2>
+                <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
+                <ul id="searchUL">
+                    <li th:each="item : ${items}">
+                        <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" checked="false" th:name="${item.name}" />
+                        <a th:id="'A' + ${item.name}" href="#" th:onclick="'changeInput(\'' + ${item.name} + '\')'" th:text="${item.displayName}"></a>
+                    </li>
+                </ul>
+            </div>
+
+            <button>Submit Config</button>
+        </form>
+    </div>
+
+    <script>
+        function loadListItems() {
+            const items = JSON.parse("${jsonBlob}");
+            items.forEach(element => {
+                if (element.name !== 'air') {
+                    const li = document.createElement('LI');
+                    const input = document.createElement("input");
+                    input.setAttribute('type', 'checkbox');
+                    input.setAttribute('id', 'I' + element.name);
+                    input.style.display = 'none';
+                    input.setAttribute('checked', 'false');
+                    input.setAttribute('name', element.name);
+
+                    const a = document.createElement("a");
+                    a.setAttribute('id', 'A' + element.name);
+                    a.setAttribute('href', '#');
+                    a.setAttribute('onclick', `changeInput('${element.name}')`);
+                    a.innerHTML = element.displayName;
+
+                    li.appendChild(input);
+                    li.appendChild(a);
+                    document.getElementById('searchUL').appendChild(li);
+                }
+            });
+        }
+
+        function changeInput(id) {
+            if (document.getElementById('I' + id).getAttribute('checked') === 'false') {
+                document.getElementById('I' + id).setAttribute('checked', 'true');
+                document.getElementById('A' + id).style.backgroundColor = 'rgb(15, 148, 21)';
+            } else {
+                document.getElementById('I' + id).setAttribute('checked', 'false');
+                document.getElementById('A' + id).style.backgroundColor = 'rgb(246, 246, 246)';
+            }
+            document
+        }
+
+        function get(name) {
+            if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+                return decodeURIComponent(name[1]);
+        }
+
+        // Get the element with id=" defaultOpen " and click on it
+        document.getElementById('defaultOpen').click();
+    </script>
+</body>
+
+</html>

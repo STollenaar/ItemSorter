@@ -61,18 +61,19 @@ public class Database {
 		}
 	}
 
-	public void saveSigns(Location signLocation, List<String> lines) {
+	public void saveFrames(Location frameLocation) {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
 					"SELECT id FROM Hoppers WHERE `signX`=? AND `signY`=? AND `signZ`=? AND `signWorld`=?;");
-			pst.setInt(1, signLocation.getBlockX());
-			pst.setInt(2, signLocation.getBlockY());
-			pst.setInt(3, signLocation.getBlockZ());
-			pst.setString(4, signLocation.getWorld().getName());
+			pst.setInt(1, frameLocation.getBlockX());
+			pst.setInt(2, frameLocation.getBlockY());
+			pst.setInt(3, frameLocation.getBlockZ());
+			pst.setString(4, frameLocation.getWorld().getName());
 			ResultSet rs = pst.executeQuery();
 			rs.next();
-			saveSigns(rs.getInt("id"), lines);
+			
+			//saveSigns(rs.getInt("id"));
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -87,7 +88,7 @@ public class Database {
 		}
 	}
 
-	private void saveSigns(int hopperID, List<String> signData) {
+	private void saveFrames(int hopperID, List<String> signData) {
 
 		for (String line : signData) {
 			for (String l : line.split("\n| ")) {
@@ -182,7 +183,7 @@ public class Database {
 		return false;
 	}
 
-	public boolean getSavedSign(Location sign) {
+	public boolean getSavedItemFrame(Location sign) {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
@@ -238,7 +239,7 @@ public class Database {
 		}
 	}
 
-	public void deleteSign(Location signLocation) {
+	public void deleteFrame(Location signLocation) {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
