@@ -1,7 +1,5 @@
 package tollenaar.stephen.ItemSorter.Events;
 
-import java.util.List;
-
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -20,11 +18,11 @@ public class HopperHandler implements Listener {
 	@EventHandler
 	public void onHopperInputEvent(InventoryMoveItemEvent event) {
 		if (event.getDestination().getType() == InventoryType.HOPPER
-				&& database.getSavedHopper(event.getDestination().getLocation())) {
-			List<String> results = database.getSignDatas(event.getDestination().getLocation());
+				&& database.hasSavedHopper(event.getDestination().getLocation())) {
+/*			List<String> results = database.getSignDatas(event.getDestination().getLocation());
 			if(!results.contains(event.getItem().getType().name().toLowerCase())){
 				event.setCancelled(true);
-			}
+			}*/
 		}
 	}
 

@@ -1,4 +1,4 @@
-package tollenaar.stephen.ItemSorter.Core;
+package tollenaar.stephen.ItemSorter.Util;
 
 public class Item {
 	private int id;

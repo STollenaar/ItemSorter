@@ -1,16 +1,14 @@
 package tollenaar.stephen.ItemSorter.Core;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -24,8 +22,10 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import io.javalin.Javalin;
+import io.javalin.http.UnauthorizedResponse;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
+import tollenaar.stephen.ItemSorter.Util.Item;
 
 public class ItemSorter extends JavaPlugin {
 
@@ -69,8 +69,20 @@ public class ItemSorter extends JavaPlugin {
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
-
-		startWebServer();
+		
+		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+			@Override
+			public void run() {
+				startWebServer();
+			}
+		});
+		
+		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+			@Override
+			public void run() {
+				database.load();
+			}
+		});
 	}
 
 	@Override
@@ -109,6 +121,18 @@ public class ItemSorter extends JavaPlugin {
 		});
 
 		app.get("/" + config.getString("initialPageResponse"), ctx -> {
+			try{
+			String userCode = (String) ctx.queryParam("userCode");
+			int frameID = Integer.parseInt(ctx.queryParam("frameID"));
+			
+			if(!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)){
+				throw new UnauthorizedResponse("You're not supposed to be here!!");
+			}
+			
+			}catch(NumberFormatException ex){
+				throw new UnauthorizedResponse("You're not supposed to be here!!");
+			}
+
 			ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
 			ctx.attribute("items", minecraftItems);
 			ctx.render("/web/index.html");
