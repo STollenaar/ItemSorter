@@ -8,12 +8,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 
+import tollenaar.stephen.ItemSorter.Util.Book;
 import tollenaar.stephen.ItemSorter.Util.Frame;
 import tollenaar.stephen.ItemSorter.Util.Hopper;
 
@@ -37,9 +43,9 @@ public class Database {
 		try {
 			pst = getConnection().prepareStatement(
 					"SELECT * FROM `Hoppers` WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
-			pst.setInt(1, hopperLocation.getBlockX());
-			pst.setInt(2, hopperLocation.getBlockY());
-			pst.setInt(3, hopperLocation.getBlockZ());
+			pst.setDouble(1, hopperLocation.getX());
+			pst.setDouble(2, hopperLocation.getY());
+			pst.setDouble(3, hopperLocation.getZ());
 			pst.setString(4, hopperLocation.getWorld().getName());
 			ResultSet rs = pst.executeQuery();
 
@@ -48,9 +54,9 @@ public class Database {
 				pst = getConnection().prepareStatement("INSERT INTO `Hoppers` ("
 						+ "`hopperX`, `hopperY`, `hopperZ`, `hopperWorld`) " + "VALUES (?,?,?,?);");
 
-				pst.setInt(1, hopperLocation.getBlockX());
-				pst.setInt(2, hopperLocation.getBlockY());
-				pst.setInt(3, hopperLocation.getBlockZ());
+				pst.setDouble(1, hopperLocation.getX());
+				pst.setDouble(2, hopperLocation.getY());
+				pst.setDouble(3, hopperLocation.getZ());
 				pst.setString(4, hopperLocation.getWorld().getName());
 				pst.execute();
 			}
@@ -74,9 +80,9 @@ public class Database {
 		try {
 			pst = getConnection().prepareStatement(
 					"SELECT * FROM Hoppers WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
-			pst.setInt(1, hopperLocation.getBlockX());
-			pst.setInt(2, hopperLocation.getBlockY());
-			pst.setInt(3, hopperLocation.getBlockZ());
+			pst.setDouble(1, hopperLocation.getX());
+			pst.setDouble(2, hopperLocation.getY());
+			pst.setDouble(3, hopperLocation.getZ());
 			pst.setString(4, hopperLocation.getWorld().getName());
 			ResultSet rs = pst.executeQuery();
 			rs.next();
@@ -101,15 +107,17 @@ public class Database {
 
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection()
-					.prepareStatement("INSERT INTO `Frames` (`hopper_id`, `frameX`, `frameY`, `frameZ`, `frameWorld`) "
-							+ "VALUES (?,?,?,?,?);");
+			pst = getConnection().prepareStatement(
+					"INSERT INTO `Frames` (`hopper_id`, `frameX`, `frameY`, `frameZ`, `frameWorld`,`frameYaw`, `framePitch`) "
+							+ "VALUES (?,?,?,?,?,?,?);");
 
 			pst.setInt(1, hopperID);
-			pst.setInt(2, frameLocation.getBlockX());
-			pst.setInt(3, frameLocation.getBlockY());
-			pst.setInt(4, frameLocation.getBlockZ());
+			pst.setDouble(2, frameLocation.getX());
+			pst.setDouble(3, frameLocation.getY());
+			pst.setDouble(4, frameLocation.getZ());
 			pst.setString(5, frameLocation.getWorld().getName());
+			pst.setFloat(6, frameLocation.getYaw());
+			pst.setFloat(7, frameLocation.getPitch());
 			pst.execute();
 
 		} catch (SQLException e) {
@@ -157,9 +165,9 @@ public class Database {
 			pst = getConnection().prepareStatement("SELECT * FROM `Hoppers` WHERE "
 					+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
-			pst.setInt(1, hopper.getBlockX());
-			pst.setInt(2, hopper.getBlockY());
-			pst.setInt(3, hopper.getBlockZ());
+			pst.setDouble(1, hopper.getX());
+			pst.setDouble(2, hopper.getY());
+			pst.setDouble(3, hopper.getZ());
 			pst.setString(4, hopper.getWorld().getName());
 
 			ResultSet rs = pst.executeQuery();
@@ -183,21 +191,22 @@ public class Database {
 		return false;
 	}
 
-	public boolean hasSavedItemFrame(Location frame) {
-		if (Frame.getFRAME(frame) != null) {
+	public boolean hasSavedItemFrame(Location frameLocation) {
+		if (Frame.getFRAME(frameLocation) != null) {
 			return true;
 		}
 
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement(
-					"SELECT * FROM `Frames` WHERE " + "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=?;");
+			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE "
+					+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
 
-			pst.setInt(1, frame.getBlockX());
-			pst.setInt(2, frame.getBlockY());
-			pst.setInt(3, frame.getBlockZ());
-			pst.setString(4, frame.getWorld().getName());
-
+			pst.setDouble(1, frameLocation.getX());
+			pst.setDouble(2, frameLocation.getY());
+			pst.setDouble(3, frameLocation.getZ());
+			pst.setString(4, frameLocation.getWorld().getName());
+			pst.setFloat(5, frameLocation.getYaw());
+			pst.setFloat(6, frameLocation.getPitch());
 			ResultSet rs = pst.executeQuery();
 
 			if (rs.next()) {
@@ -245,20 +254,126 @@ public class Database {
 		return false;
 	}
 
-	public Object getSavedItemFrame(Location frame, String field) {
-		if (Frame.getFRAME(frame) != null) {
-			return Frame.getFRAME(frame).getField(field);
+	public Object getSavedHopperByLocation(Location hopper, String field) {
+		if (Hopper.getHOPPER(hopper) != null) {
+			return Hopper.getHOPPER(hopper).getField(field);
 		}
 
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement(
-					"SELECT * FROM `Frames` WHERE " + "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=?;");
+			pst = getConnection().prepareStatement("SELECT * FROM `Hoppers` WHERE "
+					+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
-			pst.setInt(1, frame.getBlockX());
-			pst.setInt(2, frame.getBlockY());
-			pst.setInt(3, frame.getBlockZ());
-			pst.setString(4, frame.getWorld().getName());
+			pst.setDouble(1, hopper.getX());
+			pst.setDouble(2, hopper.getY());
+			pst.setDouble(3, hopper.getZ());
+			pst.setString(4, hopper.getWorld().getName());
+
+			ResultSet rs = pst.executeQuery();
+
+			if (rs.next()) {
+				new Hopper(rs);
+				return rs.getObject(field);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+		return false;
+	}
+
+	public Object getSavedItemFrameByHopperID(int hopperID, String field) {
+		List<Object> frames = new ArrayList<>();
+		for (Location frameLocation : Frame.getFrames()) {
+			if (Frame.getFRAME(frameLocation).getHopperID() == hopperID) {
+				frames.add(Frame.getFRAME(frameLocation).getField(field));
+			}
+		}
+		if (frames.size() != 0) {
+			return frames;
+		}
+
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE " + "`hopper_id`=?;");
+
+			pst.setInt(1, hopperID);
+
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				new Frame(rs);
+				return rs.getObject(field);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+		return null;
+	}
+
+	public Object getSavedItemFrameByLocation(Location frameLocation, String field) {
+		if (Frame.getFRAME(frameLocation) != null) {
+			return Frame.getFRAME(frameLocation).getField(field);
+		}
+
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE "
+					+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
+
+			pst.setDouble(1, frameLocation.getX());
+			pst.setDouble(2, frameLocation.getY());
+			pst.setDouble(3, frameLocation.getZ());
+			pst.setString(4, frameLocation.getWorld().getName());
+			pst.setFloat(5, frameLocation.getYaw());
+			pst.setFloat(6, frameLocation.getPitch());
+
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				new Frame(rs);
+				return rs.getObject(field);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+		return null;
+	}
+
+	public Object getSavedItemFrameByID(int frameID, String field) {
+		if (Frame.getFRAME(frameID) != null) {
+			return Frame.getFRAME(frameID).getField(field);
+		}
+
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE " + "`id`=?;");
+
+			pst.setInt(1, frameID);
 
 			ResultSet rs = pst.executeQuery();
 			if (rs.next()) {
@@ -292,9 +407,9 @@ public class Database {
 					pst = getConnection().prepareStatement("DELETE FROM `Hoppers` WHERE "
 							+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
-					pst.setInt(1, hopperLocation.getBlockX());
-					pst.setInt(2, hopperLocation.getBlockY());
-					pst.setInt(3, hopperLocation.getBlockZ());
+					pst.setDouble(1, hopperLocation.getX());
+					pst.setDouble(2, hopperLocation.getY());
+					pst.setDouble(3, hopperLocation.getZ());
 					pst.setString(4, hopperLocation.getWorld().getName());
 					pst.execute();
 
@@ -323,12 +438,14 @@ public class Database {
 				PreparedStatement pst = null;
 				try {
 					pst = getConnection().prepareStatement("DELETE FROM `Frames` WHERE "
-							+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=?;");
+							+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
 
-					pst.setInt(1, frameLocation.getBlockX());
-					pst.setInt(2, frameLocation.getBlockY());
-					pst.setInt(3, frameLocation.getBlockZ());
+					pst.setDouble(1, frameLocation.getX());
+					pst.setDouble(2, frameLocation.getY());
+					pst.setDouble(3, frameLocation.getZ());
 					pst.setString(4, frameLocation.getWorld().getName());
+					pst.setFloat(5, frameLocation.getYaw());
+					pst.setFloat(6, frameLocation.getPitch());
 					pst.execute();
 
 				} catch (SQLException e) {
@@ -407,10 +524,26 @@ public class Database {
 
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
-				new Frame(rs);
+				Frame frame = new Frame(rs);
+				Location frameLoc = new Location(Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(),
+						frame.getZ(), frame.getYaw(), frame.getPitch());
+				for (Entity ent : frameLoc.getChunk().getEntities()) {
+					// getting the right item frame
+					if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
+						ItemFrame fr = (ItemFrame) ent;
+						if(fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK && fr.getItem().getItemMeta().hasLore()){
+							Book book = (Book) Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
+							book.addSelf(frame.getId());
+						}
+					}
+				}
 			}
 
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
@@ -433,14 +566,15 @@ public class Database {
 		try {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS Hoppers (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-					+ " hopperX INTEGER NOT NULL," + " hopperY INTEGER NOT NULL," + " hopperZ INTEGER NOT NULL,"
+					+ " hopperX REAL NOT NULL," + " hopperY REAL NOT NULL," + " hopperZ REAL NOT NULL,"
 					+ " hopperWorld TEXT NOT NULL);"
 					+ "CREATE TABLE IF NOT EXISTS Frames (id INTEGER PRIMARY KEY AUTOINCREMENT, hopper_id INTEGER NOT NULL, "
-					+ "frameX INTEGER NOT NULL," + " frameY INTEGER NOT NULL," + " frameZ INTEGER NOT NULL,"
+					+ "frameX REAL NOT NULL," + " frameY REAL NOT NULL,"
+					+ " frameZ REAL NOT NULL, frameYaw REAL NOT NULL, framePitch REAL NOT NULL,"
 					+ " frameWorld TEXT NOT NULL," + " CONSTRAINT fk_Hoppers" + " FOREIGN KEY (hopper_id)"
 					+ " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
 					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
-					+ "(userUUID TEXT PRIMARY KEY, frame_id INTEGER NOT NULL, "
+					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
 					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
 			statement.close();
 		} catch (SQLException e) {

@@ -18,11 +18,13 @@
 
         <form method="POST" th:action="${postAction}">
             <div id="HopperInput" class="tabcontent">
+                <input type="hidden" th:value="${userCode}" name="userCode" />
+                <input type="hidden" th:value="${frameID}" name="frameID" />
                 <h2>Select all the blocks the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL">
-                    <li th:each="item : ${items}">
-                        <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" checked="false" th:name="${item.name}" />
+                    <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
+                        <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" th:name="${item.name}" th:value="${item.name}" />
                         <a th:id="'A' + ${item.name}" href="#" th:onclick="'changeInput(\'' + ${item.name} + '\')'" th:text="${item.displayName}"></a>
                     </li>
                 </ul>
@@ -42,11 +44,6 @@
                 document.getElementById('A' + id).style.backgroundColor = 'rgb(246, 246, 246)';
             }
             document
-        }
-
-        function get(name) {
-            if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
-                return decodeURIComponent(name[1]);
         }
 
         // Get the element with id=" defaultOpen " and click on it

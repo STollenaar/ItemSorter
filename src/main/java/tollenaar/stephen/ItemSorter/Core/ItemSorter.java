@@ -22,6 +22,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import io.javalin.Javalin;
+import io.javalin.http.ConflictResponse;
+import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.http.UnauthorizedResponse;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
@@ -30,6 +32,7 @@ import tollenaar.stephen.ItemSorter.Util.Item;
 public class ItemSorter extends JavaPlugin {
 
 	public Database database;
+	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
 	private static Javalin app;
 	private static List<Item> minecraftItems;
@@ -41,6 +44,7 @@ public class ItemSorter extends JavaPlugin {
 		saveConfig();
 
 		database = new Database(this);
+		hopperConfig = new HopperConfiguring();
 
 		// registering events
 		PluginManager pm = getServer().getPluginManager();
@@ -69,14 +73,14 @@ public class ItemSorter extends JavaPlugin {
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
-		
+
 		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 			@Override
 			public void run() {
 				startWebServer();
 			}
 		});
-		
+
 		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 			@Override
 			public void run() {
@@ -97,7 +101,6 @@ public class ItemSorter extends JavaPlugin {
 	}
 
 	public void startWebServer() {
-		ClassLoader cl = ClassLoader.getSystemClassLoader();
 
 		try {
 			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
@@ -106,36 +109,44 @@ public class ItemSorter extends JavaPlugin {
 			e.printStackTrace();
 		}
 
-		URL[] urls = ((URLClassLoader) cl).getURLs();
-
-		for (URL url : urls) {
-			System.out.println(url.getFile());
-		}
-
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
 		app = Javalin.create(config -> config.addStaticFiles("/web")).start(config.getInt("port"));
 
 		app.post("/" + config.getString("postConfigResponse"), ctx -> {
-			ctx.render("/web/response.html");
+			try {
+				String userCode = (String) ctx.formParam("userCode");
+				int frameID = Integer.parseInt(ctx.formParam("frameID"));
+				if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
+					ctx.result("Thank you, you can close this page now.");
+				} else {
+					throw new ConflictResponse("Conflicting data while posting your configuration set up.");
+				}
+			} catch (NumberFormatException | NullPointerException e) {
+				e.printStackTrace();
+				throw new InternalServerErrorResponse(
+						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+			}
 		});
 
 		app.get("/" + config.getString("initialPageResponse"), ctx -> {
-			try{
-			String userCode = (String) ctx.queryParam("userCode");
-			int frameID = Integer.parseInt(ctx.queryParam("frameID"));
-			
-			if(!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)){
-				throw new UnauthorizedResponse("You're not supposed to be here!!");
-			}
-			
-			}catch(NumberFormatException ex){
+			try {
+				String userCode = (String) ctx.queryParam("userCode");
+				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
+				ctx.attribute("userCode", userCode);
+				ctx.attribute("frameID", frameID);
+				ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
+				ctx.attribute("items", minecraftItems);
+				ctx.render("/web/index.html");
+				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+					throw new UnauthorizedResponse("You're not supposed to be here!!");
+				}
+
+			} catch (NumberFormatException ex) {
 				throw new UnauthorizedResponse("You're not supposed to be here!!");
 			}
 
-			ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
-			ctx.attribute("items", minecraftItems);
-			ctx.render("/web/index.html");
 		});
 
 		Thread.currentThread().setContextClassLoader(classLoader);

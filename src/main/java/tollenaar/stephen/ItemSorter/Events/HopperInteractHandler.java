@@ -1,5 +1,11 @@
 package tollenaar.stephen.ItemSorter.Events;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.Base64;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,11 +14,13 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.meta.BookMeta;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import tollenaar.stephen.ItemSorter.Core.Database;
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
+import tollenaar.stephen.ItemSorter.Util.Book;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -31,22 +39,35 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onHopperConfigEvent(PlayerInteractEntityEvent event) {
 		if (event.getPlayer().getItemInHand() != null
-				&& event.getPlayer().getItemInHand().getType() == Material.WRITABLE_BOOK
+
 				&& event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& ((ItemFrame) event.getRightClicked()).isEmpty()
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
-			int frameID = (int) database.getSavedItemFrame(event.getRightClicked().getLocation(), "id");
-			
-			database.savePlayer(event.getPlayer().getUniqueId(),frameID);
+			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
 
-			String url = plugin.getConfig().getString("URL") + ":" + plugin.getConfig().getInt("port") + "/"
-					+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
-					+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
+			if (event.getPlayer().getItemInHand().getType() == Material.WRITABLE_BOOK) {
+				database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
-			TextComponent text = new TextComponent("Click here to configure the hopper sorting");
-			text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+				String url = plugin.getConfig().getString("URL") + ":" + plugin.getConfig().getInt("port") + "/"
+						+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
+						+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
 
-			event.getPlayer().sendMessage(text);
+				TextComponent text = new TextComponent("Click here to configure the hopper sorting");
+				text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+
+				event.getPlayer().sendMessage(text);
+			} else if (event.getPlayer().getItemInHand().getType() == Material.WRITTEN_BOOK) {
+				BookMeta meta = (BookMeta) event.getPlayer().getItemInHand().getItemMeta();
+				if(meta.hasLore()){
+					String bookValue = meta.getLore().get(0).replaceAll("§", "");
+					try {
+						Book b = (Book) Book.fromString(bookValue);
+						b.addSelf(frameID);
+					} catch (ClassNotFoundException | IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	}
 
@@ -59,7 +80,6 @@ public class HopperInteractHandler implements Listener {
 			if (event.getBlock().getType() == Material.HOPPER) {
 				database.saveHoppers(event.getBlock().getLocation(), event.getEntity().getLocation());
 			}
-
 		}
 	}
 
@@ -87,10 +107,14 @@ public class HopperInteractHandler implements Listener {
 		if (event.getDamager().getType() == EntityType.PLAYER && event.getEntityType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getEntity().getLocation())
 				&& database.hasSavedPlayerWithItemFrame(event.getDamager().getUniqueId(),
-						(int) database.getSavedItemFrame(event.getEntity().getLocation(), "id"))) {
+						(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"))) {
 
 			database.deletePlayerWithFrame(event.getDamager().getUniqueId(),
-					(int) database.getSavedItemFrame(event.getEntity().getLocation(), "id"));
+					(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
+			Book.removeBook((int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
 		}
 	}
+	
+	
+
 }

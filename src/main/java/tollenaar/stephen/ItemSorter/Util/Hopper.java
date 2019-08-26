@@ -11,18 +11,18 @@ import org.bukkit.Location;
 public class Hopper {
 	private static Map<Location, Hopper> HOPPERS;
 
-	private int id;
-	private int x;
-	private int y;
-	private int z;
+	private final int id;
+	private double x;
+	private double y;
+	private double z;
 	private String world;
 
 	public Hopper(ResultSet rs) throws SQLException {
-		this(rs.getInt("id"), rs.getInt("hopperX"), rs.getInt("hopperY"), rs.getInt("hopperZ"),
+		this(rs.getInt("id"), rs.getDouble("hopperX"), rs.getDouble("hopperY"), rs.getDouble("hopperZ"),
 				rs.getString("hopperWorld"));
 	}
 
-	public Hopper(int id, int x, int y, int z, String world) {
+	public Hopper(int id, double x, double y, double z, String world) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
@@ -39,31 +39,27 @@ public class Hopper {
 		return id;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public int getX() {
+	public double getX() {
 		return x;
 	}
 
-	public void setX(int x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 
-	public int getY() {
+	public double getY() {
 		return y;
 	}
 
-	public void setY(int y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 
-	public int getZ() {
+	public double getZ() {
 		return z;
 	}
 
-	public void setZ(int z) {
+	public void setZ(double z) {
 		this.z = z;
 	}
 
@@ -73,6 +69,23 @@ public class Hopper {
 
 	public void setWorld(String world) {
 		this.world = world;
+	}
+
+	public Object getField(String field) {
+		switch (field) {
+		case "id":
+			return getId();
+		case "hopperX":
+			return getX();
+		case "hopperY":
+			return getY();
+		case "hopperZ":
+			return getZ();
+		case "hopperWorld":
+			return getWorld();
+		default:
+			throw new NullPointerException("Unknown Field");
+		}
 	}
 
 	public static Hopper getHOPPER(Location location) {
@@ -87,7 +100,7 @@ public class Hopper {
 		if (HOPPERS == null) {
 			HOPPERS = new HashMap<>();
 		}
-		
+
 		HOPPERS.remove(location);
 	}
 }
