@@ -16,6 +16,7 @@ import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.text.WordUtils;
 
 public class Book implements Serializable {
 
@@ -47,7 +48,7 @@ public class Book implements Serializable {
 		// tmp list for better formatting
 		List<String> tmp = new ArrayList<>();
 		for (Material material : this.inputConfig) {
-			tmp.add(material.name());
+			tmp.add(WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " ")));
 		}
 		pageBuilder.set(path, tmp);
 

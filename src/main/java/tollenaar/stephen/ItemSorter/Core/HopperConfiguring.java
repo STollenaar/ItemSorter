@@ -35,9 +35,11 @@ public class HopperConfiguring {
 				Book book = new Book(frameID);
 
 				for (String key : formParams.keySet()) {
-					String materialName = formParams.get(key).get(0);
-					if (Material.matchMaterial(materialName) != null) {
-						book.addInputConfig(Material.matchMaterial(materialName));
+					String value = formParams.get(key).get(0);
+					if (key.contains("input_")) {
+						if (Material.matchMaterial(value) != null) {
+							book.addInputConfig(Material.matchMaterial(value));
+						}
 					}
 				}
 				// serializing the book and saving as lore

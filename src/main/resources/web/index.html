@@ -14,6 +14,7 @@
 
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
+            <button class="tablinks" onclick="openTab(event, 'HopperOutput')">Hopper Output</button>
         </div>
 
 
@@ -21,14 +22,18 @@
             <div id="HopperInput" class="tabcontent">
                 <input type="hidden" th:value="${userCode}" name="userCode" />
                 <input type="hidden" th:value="${frameID}" name="frameID" />
-                <h2>Select all the blocks the hopper will accept</h2>
+                <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" style="height: 70%; overflow-y: scroll">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
-                        <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" th:name="${item.name}" th:value="${item.name}" />
+                        <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" th:name="'input_'  + ${item.name}" th:value="${item.name}" />
                         <a th:id="'A' + ${item.name}" href="#!" th:onclick="'changeInput(\'' + ${item.name} + '\')'" th:text="${item.displayName}"></a>
                     </li>
                 </ul>
+            </div>
+
+            <div id="HopperOutput" class="tabcontent">
+                <h2>Configure how the hopper will output the items.</h2>
             </div>
 
             <button class="submitButton">Submit Config</button>
