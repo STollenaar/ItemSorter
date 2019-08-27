@@ -21,7 +21,8 @@ public class Book implements Serializable {
 
 	private static final long serialVersionUID = 4519138450923555946L;
 	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
-	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
+	private List<Material> inputConfig = new ArrayList<>(); // input sorting
+															// configure
 
 	public Book(int frameID) {
 		this.addSelf(frameID);
@@ -100,11 +101,16 @@ public class Book implements Serializable {
 	}
 
 	/** Write the object to a Base64 string. */
-	public static String toString(Serializable o) throws IOException {
+	public String toString() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		oos.writeObject(o);
-		oos.close();
+		ObjectOutputStream oos;
+		try {
+			oos = new ObjectOutputStream(baos);
+			oos.writeObject(this);
+			oos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return Base64.getEncoder().encodeToString(baos.toByteArray());
 	}
 

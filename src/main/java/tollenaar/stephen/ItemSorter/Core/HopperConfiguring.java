@@ -1,11 +1,6 @@
 package tollenaar.stephen.ItemSorter.Core;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +19,6 @@ import tollenaar.stephen.ItemSorter.Util.Frame;
 
 public class HopperConfiguring {
 
-
 	public HopperConfiguring() {
 	}
 
@@ -33,52 +27,47 @@ public class HopperConfiguring {
 		Location frameLoc = new Location(Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(), frame.getZ(),
 				frame.getYaw(), frame.getPitch());
 		for (Entity ent : frameLoc.getChunk().getEntities()) {
-			//getting the right item frame
+			// getting the right item frame
 			if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
 				ItemFrame fr = (ItemFrame) ent;
 
-
-				//loading the book materials
+				// loading the book materials
 				Book book = new Book(frameID);
-				
+
 				for (String key : formParams.keySet()) {
 					String materialName = formParams.get(key).get(0);
 					if (Material.matchMaterial(materialName) != null) {
 						book.addInputConfig(Material.matchMaterial(materialName));
 					}
 				}
-				try {
-					//serializing the book and saving as lore
-					String bookValue = Book.toString(book);
-					List<String> loreList = new ArrayList<String>();
-					//hidden value
-					loreList.add(convertToInvisibleString(bookValue));
-					ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
-					BookMeta meta = (BookMeta) replaceItem.getItemMeta();
-					meta.setTitle("HopperConfiguration");
-					meta.setAuthor(Bukkit.getPlayer(player).getName());
-					meta.setLore(loreList);
-					
-					meta.setPages(book.toPages());
-					
-					//changing the item frame item
-					replaceItem.setItemMeta(meta);
-					fr.setItem(replaceItem);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				
+				// serializing the book and saving as lore
+				String bookValue = book.toString();
+				List<String> loreList = new ArrayList<String>();
+				// hidden value
+				loreList.add(convertToInvisibleString(bookValue));
+				ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
+				BookMeta meta = (BookMeta) replaceItem.getItemMeta();
+				meta.setTitle("HopperConfiguration");
+				meta.setAuthor(Bukkit.getPlayer(player).getName());
+				meta.setLore(loreList);
+
+				meta.setPages(book.toPages());
+
+				// changing the item frame item
+				replaceItem.setItemMeta(meta);
+				fr.setItem(replaceItem);
+
 				break;
 			}
 		}
 
 	}
 
-    private static String convertToInvisibleString(String s) {
-        String hidden = "";
-        for (char c : s.toCharArray()) hidden += ChatColor.COLOR_CHAR+""+c;
-        return hidden;
-    }
+	private static String convertToInvisibleString(String s) {
+		String hidden = "";
+		for (char c : s.toCharArray())
+			hidden += ChatColor.COLOR_CHAR + "" + c;
+		return hidden;
+	}
 
 }

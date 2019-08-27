@@ -4,6 +4,7 @@
     <title>Hopper Configuration></title>
     <link rel="stylesheet" type="text/css" href="./css/tabs.css" />
     <link rel="stylesheet" type="text/css" href="./css/options.css" />
+    <link rel="stylesheet" type="text/css" href="./css/page.css" />
     <script src="./js/tabs.js"></script>
     <script src="./js/search.js"></script>
 </head>
@@ -12,7 +13,7 @@
     <div style="width: 50%; margin:auto; text-align: center">
 
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">HopperAccepting</button>
+            <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
         </div>
 
 
@@ -22,21 +23,21 @@
                 <input type="hidden" th:value="${frameID}" name="frameID" />
                 <h2>Select all the blocks the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
-                <ul id="searchUL">
+                <ul id="searchUL" style="height: 70%; overflow-y: scroll">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
                         <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" th:name="${item.name}" th:value="${item.name}" />
-                        <a th:id="'A' + ${item.name}" href="#" th:onclick="'changeInput(\'' + ${item.name} + '\')'" th:text="${item.displayName}"></a>
+                        <a th:id="'A' + ${item.name}" href="#!" th:onclick="'changeInput(\'' + ${item.name} + '\')'" th:text="${item.displayName}"></a>
                     </li>
                 </ul>
             </div>
 
-            <button>Submit Config</button>
+            <button class="submitButton">Submit Config</button>
         </form>
     </div>
 
     <script>
         function changeInput(id) {
-            if (document.getElementById('I' + id).getAttribute('checked') === 'false') {
+            if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
                 document.getElementById('I' + id).setAttribute('checked', 'true');
                 document.getElementById('A' + id).style.backgroundColor = 'rgb(15, 148, 21)';
             } else {

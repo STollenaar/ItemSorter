@@ -1,11 +1,7 @@
 package tollenaar.stephen.ItemSorter.Events;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.Base64;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,6 +41,7 @@ public class HopperInteractHandler implements Listener {
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
 
+			// getting to configure
 			if (event.getPlayer().getItemInHand().getType() == Material.WRITABLE_BOOK) {
 				database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
@@ -56,9 +53,11 @@ public class HopperInteractHandler implements Listener {
 				text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
 
 				event.getPlayer().sendMessage(text);
+
+				// when replacing a configured book into an item frame
 			} else if (event.getPlayer().getItemInHand().getType() == Material.WRITTEN_BOOK) {
 				BookMeta meta = (BookMeta) event.getPlayer().getItemInHand().getItemMeta();
-				if(meta.hasLore()){
+				if (meta.hasLore()) {
 					String bookValue = meta.getLore().get(0).replaceAll("§", "");
 					try {
 						Book b = (Book) Book.fromString(bookValue);
@@ -114,7 +113,5 @@ public class HopperInteractHandler implements Listener {
 			Book.removeBook((int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
 		}
 	}
-	
-	
 
 }

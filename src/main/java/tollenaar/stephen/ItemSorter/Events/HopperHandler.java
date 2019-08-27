@@ -23,6 +23,7 @@ public class HopperHandler implements Listener {
 		if (event.getDestination().getType() == InventoryType.HOPPER
 				&& database.hasSavedHopper(event.getDestination().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
+			
 			@SuppressWarnings("unchecked")
 			List<Integer> frames = (List<Integer>) database.getSavedItemFrameByHopperID(hopperID, "id");
 			List<Book> books = Book.getBook(frames);
@@ -33,11 +34,6 @@ public class HopperHandler implements Listener {
 					}
 				}
 			}
-			
-/*			List<String> results = database.getSignDatas(event.getDestination().getLocation());
-			if(!results.contains(event.getItem().getType().name().toLowerCase())){
-				event.setCancelled(true);
-			}*/
 		}
 	}
 

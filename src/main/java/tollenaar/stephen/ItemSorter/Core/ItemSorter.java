@@ -91,7 +91,11 @@ public class ItemSorter extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		try{
 		app.stop();
+		}catch(Exception e){
+			System.out.println("App stopped with errors");
+		}
 	}
 
 	private static void addSoftwareLibrary(File file) throws Exception {
@@ -120,6 +124,7 @@ public class ItemSorter extends JavaPlugin {
 				if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
 					ctx.result("Thank you, you can close this page now.");
+					database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
 				} else {
 					throw new ConflictResponse("Conflicting data while posting your configuration set up.");
 				}
