@@ -91,9 +91,9 @@ public class ItemSorter extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		try{
-		app.stop();
-		}catch(Exception e){
+		try {
+			app.stop();
+		} catch (Exception e) {
 			System.out.println("App stopped with errors");
 		}
 	}
@@ -123,16 +123,16 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.formParam("frameID"));
 				if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
-					ctx.render("/web/response.html");
+					ctx.attribute("response", "Thank you. You can close this page now.");
 					database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
 				} else {
-					throw new ConflictResponse("Conflicting data while posting your configuration set up.");
+					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
-			} catch (NumberFormatException | NullPointerException e) {
-				e.printStackTrace();
-				throw new InternalServerErrorResponse(
+			} catch (Exception e) {
+				ctx.attribute("response",
 						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 			}
+			ctx.render("/web/response.html");
 		});
 
 		app.get("/" + config.getString("initialPageResponse"), ctx -> {
@@ -145,15 +145,25 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("items", minecraftItems);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
-					throw new UnauthorizedResponse("You're not supposed to be here!!");
+					ctx.attribute("response", "You're not supposed to be here!!");
+					ctx.render("/web/response.html");
 				}
 
-			} catch (NumberFormatException ex) {
-				throw new UnauthorizedResponse("You're not supposed to be here!!");
+			} catch (Exception ex) {
+				ctx.attribute("response", "You're not supposed to be here!!");
+				ctx.render("/web/response.html");
 			}
 
 		});
 
+		app.get("/", ctx -> {
+			ctx.attribute("response", "You're not supposed to be here!!");
+			ctx.render("/web/response.html");
+		});
+		app.post("/", ctx -> {
+			ctx.attribute("response", "You're not supposed to be here!!");
+			ctx.render("/web/response.html");
+		});
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 }

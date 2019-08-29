@@ -45,9 +45,8 @@ public class HopperInteractHandler implements Listener {
 			if (event.getPlayer().getItemInHand().getType() == Material.WRITABLE_BOOK) {
 				database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
-				String url = plugin.getConfig().getString("URL") + ":" + plugin.getConfig().getInt("port") + "/"
-						+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
-						+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
+				String url = plugin.getConfig().getString("URL") + plugin.getConfig().getString("initialPageResponse")
+						+ "?userCode=" + event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
 
 				TextComponent text = new TextComponent("Click here to configure the hopper sorting");
 				text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
@@ -104,12 +103,14 @@ public class HopperInteractHandler implements Listener {
 	public void onItemRemoveEvent(EntityDamageByEntityEvent event) {
 
 		if (event.getDamager().getType() == EntityType.PLAYER && event.getEntityType() == EntityType.ITEM_FRAME
-				&& database.hasSavedItemFrame(event.getEntity().getLocation())
-				&& database.hasSavedPlayerWithItemFrame(event.getDamager().getUniqueId(),
-						(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"))) {
+				&& database.hasSavedItemFrame(event.getEntity().getLocation())) {
 
-			database.deletePlayerWithFrame(event.getDamager().getUniqueId(),
-					(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
+			if (database.hasSavedPlayerWithItemFrame(event.getDamager().getUniqueId(),
+					(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"))) {
+				database.deletePlayerWithFrame(event.getDamager().getUniqueId(),
+						(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
+			}
+			
 			Book.removeBook((int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
 		}
 	}
