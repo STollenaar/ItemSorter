@@ -24,7 +24,7 @@
                 <input type="hidden" th:value="${frameID}" name="frameID" />
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
-                <ul class="searchUL" style="height: 70%; overflow-y: scroll">
+                <ul id="searchUL" class="searchUL" style="height: 70%; overflow-y: scroll">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
                         <input type="checkbox" th:id="'I' + ${item.name}" style="display: none" th:name="'input_'  + ${item.name}" th:value="${item.name}" />
 

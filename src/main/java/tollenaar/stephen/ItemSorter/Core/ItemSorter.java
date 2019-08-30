@@ -138,7 +138,7 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
-				ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
+				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
