@@ -46,8 +46,8 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
-              <outputFile>C:\Users\Stephen\Dropbox\MinecraftServer\plugins\${project.name}.jar</outputFile>
-              <outputDirectory>C:\Users\Stephen\Dropbox\MinecraftServer\plugins</outputDirectory>
+              <outputFile>C:\Users\creep\Dropbox\MinecraftServer\plugins\${project.name}.jar</outputFile>
+              <outputDirectory>C:\Users\creep\Dropbox\MinecraftServer\plugins</outputDirectory>
             </configuration>
           </execution>
         </executions>
