@@ -8,7 +8,7 @@
  /* Style the buttons that are used to open the tab content */
  
  .tab button {
-     background-color: inherit;
+     background-image: url("../images/sign.png");
      float: left;
      border: none;
      outline: none;
@@ -21,12 +21,12 @@
  /* Change background color of buttons on hover */
  
  .tab button:hover {
-     background-color: #ddd;
+     background-image: url("../images/hover_sign.png");
  }
  /* Create an active/current tablink class */
  
  .tab button.active {
-     background-color: #ccc;
+     background-image: url("../images/selected_sign.png");
  }
  /* Style the tab content */
  

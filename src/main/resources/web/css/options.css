@@ -17,24 +17,24 @@
     /* Add some space below the input */
 }
 
-#searchUL {
+.searchUL {
     /* Remove default list styling */
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
-#searchUL li {
+.searchUL li {
     display: inline-block;
     margin: 2.5px;
 }
 
-#searchUL li a {
+.searchUL li a {
     border: 1px solid #ddd;
     /* Add a border to all links */
     margin-top: -1px;
     /* Prevent double borders */
-    background-color: #f6f6f6;
+    background-image: url("../images/sign.png");
     /* Grey background color */
     padding: 12px;
     /* Add some padding */
@@ -48,7 +48,11 @@
     /* Make it into a block element to fill the whole list */
 }
 
-#searchUL li a:hover:not(.header) {
-    background-color: #eee;
+.searchUL li a.active {
+    background-image: url("../images/selected_sign.png");
+}
+
+#searchUL li a:hover(.header) {
+    background-image: url("../images/hover_sign.png");
     /* Add a hover effect to all links, except for headers */
 }
