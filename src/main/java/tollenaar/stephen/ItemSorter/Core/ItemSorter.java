@@ -22,9 +22,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import io.javalin.Javalin;
-import io.javalin.http.ConflictResponse;
-import io.javalin.http.InternalServerErrorResponse;
-import io.javalin.http.UnauthorizedResponse;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 import tollenaar.stephen.ItemSorter.Util.Item;
@@ -141,7 +138,7 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
-				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
+				ctx.attribute("postAction", "/" + config.getString("postConfigResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
