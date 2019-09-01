@@ -4,6 +4,7 @@
     background-position: 10px 12px;
     /* Position the search icon */
     background-repeat: no-repeat;
+    font-family: "minecraftfont";
     /* Do not repeat the icon image */
     width: 100%;
     /* Full-width */
@@ -29,30 +30,29 @@
     margin: 2.5px;
 }
 
-.searchUL li a {
-    border: 1px solid #ddd;
-    /* Add a border to all links */
+.searchUL li div {
     margin-top: -1px;
-    /* Prevent double borders */
     background-image: url("../images/sign.png");
-    /* Grey background color */
+    background-size: contain;
     padding: 12px;
-    /* Add some padding */
-    text-decoration: none;
-    /* Remove default text underline */
-    font-size: 18px;
-    /* Increase the font-size */
-    color: black;
-    /* Add a black text color */
-    display: block;
-    /* Make it into a block element to fill the whole list */
 }
 
-.searchUL li a.active {
+.searchUL li div img {
+    width: 32px;
+}
+
+.searchUL li div span {
+    vertical-align: super;
+    text-decoration: none;
+    font-size: 18px;
+    color: black;
+    overflow-wrap: normal;
+}
+
+.searchUL li div.active {
     background-image: url("../images/selected_sign.png");
 }
 
-#searchUL li a:hover(.header) {
+#searchUL li div:hover:not(.header) {
     background-image: url("../images/hover_sign.png");
-    /* Add a hover effect to all links, except for headers */
 }

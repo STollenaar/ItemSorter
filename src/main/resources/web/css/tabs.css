@@ -9,6 +9,7 @@
  
  .tab button {
      background-image: url("../images/sign.png");
+     background-size: contain;
      float: left;
      border: none;
      outline: none;
