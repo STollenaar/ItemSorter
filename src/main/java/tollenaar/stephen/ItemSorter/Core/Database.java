@@ -155,6 +155,40 @@ public class Database {
 		}
 	}
 
+	public void savePlayer(UUID playerUUID, String bookValue) {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `bookValue`=?;");
+			pst.setString(1, bookValue);
+			ResultSet rs = pst.executeQuery();
+
+			if (rs.next()) {
+				pst.close();
+				pst = getConnection()
+						.prepareStatement("UPDATE `EditUserConfigs` SET `userUUID`=? WHERE `bookValue`=?;");
+			} else {
+				pst.close();
+				pst = getConnection()
+						.prepareStatement("INSERT INTO `EditUserConfigs` (`userUUID`, `bookValue`) VALUES (?,?);");
+			}
+			pst.setString(1, playerUUID.toString());
+			pst.setString(2, bookValue);
+
+			pst.execute();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+	}
+
 	public boolean hasSavedHopper(Location hopper) {
 		if (Hopper.getHOPPER(hopper) != null) {
 			return true;
@@ -236,6 +270,30 @@ public class Database {
 
 			pst.setString(1, player.toString());
 			pst.setInt(2, frameID);
+
+			ResultSet rs = pst.executeQuery();
+			return rs.next();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+		return false;
+	}
+
+	public boolean hasSavedPlayer(String bookValue) {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `bookValue`=?;");
+
+			pst.setString(1, bookValue);
 
 			ResultSet rs = pst.executeQuery();
 			return rs.next();
@@ -395,6 +453,32 @@ public class Database {
 		return null;
 	}
 
+	public String getSavedPlayer(String bookValue) {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE " + "`bookValue`=?;");
+
+			pst.setString(1, bookValue);
+
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				return rs.getString("userUUID");
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println(ex.getStackTrace());
+			}
+		}
+		return null;
+	}
+
 	public void deleteHopper(Location hopperLocation) {
 		Hopper.removeHOPPER(hopperLocation);
 
@@ -494,6 +578,35 @@ public class Database {
 		});
 	}
 
+	public void deleteEditHopper(UUID player, String bookValue) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+
+			@Override
+			public void run() {
+				PreparedStatement pst = null;
+				try {
+					pst = getConnection().prepareStatement(
+							"DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
+
+					pst.setString(1, player.toString());
+					pst.setString(2, bookValue);
+					pst.execute();
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if (pst != null) {
+							pst.close();
+						}
+					} catch (SQLException ex) {
+						System.out.println(ex.getStackTrace());
+					}
+				}
+			}
+		});
+	}
+
 	public void loadHoppers() {
 		PreparedStatement pst = null;
 		try {
@@ -531,8 +644,10 @@ public class Database {
 					// getting the right item frame
 					if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
 						ItemFrame fr = (ItemFrame) ent;
-						if(fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK && fr.getItem().getItemMeta().hasLore()){
-							Book book = (Book) Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
+						if (fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
+								&& fr.getItem().getItemMeta().hasLore()) {
+							Book book = (Book) Book
+									.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
 							book.addSelf(frame.getId());
 						}
 					}
@@ -575,7 +690,9 @@ public class Database {
 					+ " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
 					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
 					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
-					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
+					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
+					+ "CREATE TABLE IF NOT EXISTS EditUserConfigs "
+					+ "(userUUID TEXT NOT NULL, bookValue TEXT PRIMARY KEY);");
 			statement.close();
 		} catch (SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getMessage());

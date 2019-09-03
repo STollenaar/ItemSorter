@@ -1,4 +1,6 @@
 port: 7000
-URL: "http://localhost/"
+URL: "http://localhost:7000/"
 postConfigResponse: 'postHopperConfig'
 initialPageResponse: 'HopperConfig'
+editPageResponse: 'editHopperConfig'
+postEditPageResponse: 'postEditHopperConfig'

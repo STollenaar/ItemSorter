@@ -24,6 +24,7 @@ import com.google.gson.stream.JsonReader;
 import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
+import tollenaar.stephen.ItemSorter.Util.Book;
 import tollenaar.stephen.ItemSorter.Util.Item;
 
 public class ItemSorter extends JavaPlugin {
@@ -41,7 +42,7 @@ public class ItemSorter extends JavaPlugin {
 		saveConfig();
 
 		database = new Database(this);
-		hopperConfig = new HopperConfiguring();
+		hopperConfig = new HopperConfiguring(this);
 
 		// registering events
 		PluginManager pm = getServer().getPluginManager();
@@ -153,14 +154,54 @@ public class ItemSorter extends JavaPlugin {
 
 		});
 
+		app.get("/" + config.getString("editPageResponse"), ctx -> {
+			try {
+				String bookValue = (String) ctx.queryParam("configData");
+				List<Item> checkItems = ((Book) Book.fromString(bookValue)).toItems();
+				String user = database.getSavedPlayer(bookValue);
+				ctx.attribute("bookValue", bookValue);
+				ctx.attribute("userCode", user);
+				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
+				ctx.attribute("items", minecraftItems);
+				ctx.attribute("checkItems", checkItems);
+				ctx.attribute("edit", true);
+				ctx.render("/web/index.html");
+				if (!database.hasSavedPlayer(bookValue)) {
+					ctx.attribute("response", "You're not supposed to be here!!");
+					ctx.render("/web/response.html");
+				}
+
+			} catch (Exception e) {
+				ctx.attribute("response",
+						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+				ctx.render("/web/response.html");
+			}
+
+		});
+
+		app.post("/" + config.getString("postEditPageResponse"), ctx -> {
+			try {
+				String bookValue = (String) ctx.formParam("bookValue");
+				String userCode = (String) ctx.formParam("userCode");
+				if (database.hasSavedPlayer(bookValue)) {
+					hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
+					ctx.attribute("response", "Thank you. You can close this page now.");
+					database.deleteEditHopper(UUID.fromString(userCode), bookValue);
+				} else {
+					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
+				}
+			} catch (Exception e) {
+				ctx.attribute("response",
+						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+			}
+			ctx.render("/web/response.html");
+		});
+
 		app.get("/", ctx -> {
 			ctx.attribute("response", "You're not supposed to be here!!");
 			ctx.render("/web/response.html");
 		});
-		app.post("/", ctx -> {
-			ctx.attribute("response", "You're not supposed to be here!!");
-			ctx.render("/web/response.html");
-		});
+
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 }

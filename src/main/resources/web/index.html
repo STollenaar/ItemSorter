@@ -3,11 +3,11 @@
 <head>
     <title>Hopper Configuration</title>
     <link rel="stylesheet" type="text/css" href="./css/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="./css/options.css" />
     <link rel="stylesheet" type="text/css" href="./css/page.css" />
+    <link rel="stylesheet" type="text/css" href="./css/options.css" />
     <script src="./js/tabs.js"></script>
-    <script src="./js/search.js"></script>
     <script src="./js/srcFix.js"></script>
+    <script src="./js/search.js"></script>
 </head>
 
 <body>
@@ -23,6 +23,7 @@
             <div id="HopperInput" class="tabcontent">
                 <input type="hidden" th:value="${userCode}" name="userCode" />
                 <input type="hidden" th:value="${frameID}" name="frameID" />
+                <input type="hidden" th:value="${bookValue}" name="bookValue" />
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" class="searchUL" style="height: 70%; overflow-y: scroll">
@@ -44,7 +45,7 @@
         </form>
     </div>
 
-    <script>
+    <script type="text/javascript" th:inline="javascript">
         function changeInput(evt, id) {
             if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
                 document.getElementById('I' + id).setAttribute('checked', 'true');
@@ -59,6 +60,19 @@
         // Get the element with id=" defaultOpen " and click on it
         document.getElementById('defaultOpen').click();
         fixImgSrc();
+
+        /*<![CDATA[*/
+        var ed = /*[[${edit}]]*/ ;
+        if (ed) {
+            var checked = /*[[${checkItems}]]*/ ;
+            checked.forEach(e => {
+                document.getElementById(`I${e.name}`).setAttribute('checked', 'true');
+                document.getElementById(`I${e.name}`).parentElement.className += " active";
+            });
+        }
+        /*]]>*/
+    </script>
+    <script>
     </script>
 </body>
 

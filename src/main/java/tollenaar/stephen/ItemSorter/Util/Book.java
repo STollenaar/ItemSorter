@@ -48,7 +48,7 @@ public class Book implements Serializable {
 		// tmp list for better formatting
 		List<String> tmp = new ArrayList<>();
 		for (Material material : this.inputConfig) {
-			tmp.add(WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " ")));
+			tmp.add(getDisplayName(material));
 		}
 		pageBuilder.set(path, tmp);
 
@@ -62,9 +62,25 @@ public class Book implements Serializable {
 
 		return pages;
 	}
+	
+	private String getDisplayName(Material material){
+		return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
+	}
 
 	public void addInputConfig(Material material) {
 		this.inputConfig.add(material);
+	}
+	
+	public void emptyInputConfig(){
+		this.inputConfig = new ArrayList<>();
+	}
+	
+	public List<Item> toItems(){
+		List<Item> items = new ArrayList<>();
+		for (Material material : this.inputConfig) {
+			items.add(new Item(0, 0, material.name(), getDisplayName(material)));
+		}
+		return items;
 	}
 
 	public static Book getBook(int frameID) {

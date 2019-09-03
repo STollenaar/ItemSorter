@@ -10,6 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.meta.BookMeta;
 
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -102,6 +103,7 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onItemRemoveEvent(EntityDamageByEntityEvent event) {
 
+		//filtering player and item frame
 		if (event.getDamager().getType() == EntityType.PLAYER && event.getEntityType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getEntity().getLocation())) {
 
@@ -115,4 +117,15 @@ public class HopperInteractHandler implements Listener {
 		}
 	}
 
+	
+	@EventHandler
+	public void onHopperEditEvent(PlayerInteractEvent event){
+		if(event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK && event.getItem().getItemMeta().getLore().size() == 1){
+				try {
+					Book book = (Book) Book.fromString(event.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
+					database.savePlayer(event.getPlayer().getUniqueId(), book.toString());
+				} catch (ClassNotFoundException | IOException e) {
+				}
+		}
+	}
 }
