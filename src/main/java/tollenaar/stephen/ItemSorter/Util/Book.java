@@ -75,10 +75,10 @@ public class Book implements Serializable {
 		this.inputConfig = new ArrayList<>();
 	}
 	
-	public List<Item> toItems(){
-		List<Item> items = new ArrayList<>();
+	public List<String> toItems(){
+		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {
-			items.add(new Item(0, 0, material.name(), getDisplayName(material)));
+			items.add(getDisplayName(material));
 		}
 		return items;
 	}

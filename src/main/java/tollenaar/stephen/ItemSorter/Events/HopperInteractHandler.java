@@ -32,10 +32,9 @@ public class HopperInteractHandler implements Listener {
 	}
 
 	// handling configuring of the frames
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onHopperConfigEvent(PlayerInteractEntityEvent event) {
-		if (event.getPlayer().getItemInHand() != null
+		if (event.getPlayer().getInventory().getItemInMainHand() != null
 
 				&& event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& ((ItemFrame) event.getRightClicked()).isEmpty()
@@ -43,7 +42,7 @@ public class HopperInteractHandler implements Listener {
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
 
 			// getting to configure
-			if (event.getPlayer().getItemInHand().getType() == Material.WRITABLE_BOOK) {
+			if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
 				database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
 				String url = plugin.getConfig().getString("URL") + plugin.getConfig().getString("initialPageResponse")
@@ -55,8 +54,8 @@ public class HopperInteractHandler implements Listener {
 				event.getPlayer().sendMessage(text);
 
 				// when replacing a configured book into an item frame
-			} else if (event.getPlayer().getItemInHand().getType() == Material.WRITTEN_BOOK) {
-				BookMeta meta = (BookMeta) event.getPlayer().getItemInHand().getItemMeta();
+			} else if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK) {
+				BookMeta meta = (BookMeta) event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
 				if (meta.hasLore()) {
 					String bookValue = meta.getLore().get(0).replaceAll("§", "");
 					try {

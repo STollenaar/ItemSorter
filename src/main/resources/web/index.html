@@ -28,8 +28,8 @@
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" class="searchUL" style="height: 70%; overflow-y: scroll">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
-                        <div style="cursor: pointer;" th:onclick="|changeInput(event,'${item.name}')|">
-                            <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:name="|input_${item.name}|" th:value="${item.name}" />
+                        <div style="cursor: pointer;" th:class="${#lists.contains(checkItems, item.displayName)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
+                            <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:checked="${#lists.contains(checkItems, item.displayName)}" th:name="|input_${item.name}|" th:value="${item.name}" />
                             <img th:src="|images/block/${item.name}.png|">
                             <span th:text="${item.displayName}"></span>
                         </div>
@@ -60,17 +60,6 @@
         // Get the element with id=" defaultOpen " and click on it
         document.getElementById('defaultOpen').click();
         fixImgSrc();
-
-        /*<![CDATA[*/
-        var ed = /*[[${edit}]]*/ ;
-        if (ed) {
-            var checked = /*[[${checkItems}]]*/ ;
-            checked.forEach(e => {
-                document.getElementById(`I${e.name}`).setAttribute('checked', 'true');
-                document.getElementById(`I${e.name}`).parentElement.className += " active";
-            });
-        }
-        /*]]>*/
     </script>
     <script>
     </script>

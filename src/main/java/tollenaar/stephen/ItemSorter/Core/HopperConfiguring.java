@@ -81,11 +81,10 @@ public class HopperConfiguring {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	public void editConfigureHopper(UUID player,String bookValue, Map<String, List<String>> formParams) throws ClassNotFoundException, IOException {
 
-		if(Bukkit.getPlayer(player).getItemInHand() == null || Bukkit.getPlayer(player).getItemInHand().getType() != Material.WRITTEN_BOOK || 
-				!Bukkit.getPlayer(player).getItemInHand().getItemMeta().getLore().get(0).replaceAll("§", "").equals(bookValue)){
+		if(Bukkit.getPlayer(player).getInventory().getItemInMainHand() == null || Bukkit.getPlayer(player).getInventory().getItemInMainHand().getType() != Material.WRITTEN_BOOK || 
+				!Bukkit.getPlayer(player).getInventory().getItemInMainHand().getItemMeta().getLore().get(0).replaceAll("§", "").equals(bookValue)){
 			throw new NullPointerException("Not found correct item in hand");
 		}
 		
@@ -106,12 +105,13 @@ public class HopperConfiguring {
 		List<String> loreList = new ArrayList<String>();
 		// hidden value
 		loreList.add(convertToInvisibleString(bookValueNew));
-		ItemStack replaceItem = Bukkit.getPlayer(player).getItemInHand();
+		ItemStack replaceItem = Bukkit.getPlayer(player).getInventory().getItemInMainHand();
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
 		
+		@SuppressWarnings("deprecation")
 		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
 				.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
 						+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(bookValue)))
