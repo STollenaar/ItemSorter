@@ -12,8 +12,10 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -43,7 +45,7 @@ public class Book implements Serializable {
 	}
 
 	public List<String> toPages() {
-		List<String> pages = new ArrayList<String>();
+		List<String> pages = new ArrayList<>();
 
 		String path = "InputConfig";
 		FileConfiguration pageBuilder = new YamlConfiguration();
@@ -54,7 +56,7 @@ public class Book implements Serializable {
 		}
 		pageBuilder.set(path, tmp);
 
-		List<String> inputConfigList = new ArrayList<String>(Arrays.asList(pageBuilder.saveToString().split("\n")));
+		List<String> inputConfigList = new ArrayList<>(Arrays.asList(pageBuilder.saveToString().split("\n")));
 		for (int i = 0; i < inputConfigList.size(); i += 14) {
 			int maxSub = Math.min(inputConfigList.size() - i, 13);
 			String page = inputConfigList.subList(i, i + maxSub).toString().replace("]", "").replace("[", "")
@@ -94,7 +96,7 @@ public class Book implements Serializable {
 			oos.writeObject(this);
 			oos.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		}
 		return Base64.getEncoder().encodeToString(baos.toByteArray());
 	}

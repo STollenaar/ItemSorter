@@ -32,26 +32,24 @@ public class HopperConfiguring {
 	public void configureHopper(int frameID, UUID player, Map<String, List<String>> formParams)
 			throws UnsupportedEncodingException {
 		Frame frame = Frame.getFRAME(frameID);
-		ItemFrame fr = frame.getFrame();
+		ItemFrame fr = frame.getEntityFrame();
 
-		if(fr == null) {
+		if (fr == null) {
 			throw new NullPointerException("Error trying to find the edited config item");
 		}
-		
+
 		// loading the book materials
 		Book book = new Book(frameID);
 
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
-			if (key.contains("input_")) {
-				if (Material.matchMaterial(value) != null) {
-					book.addInputConfig(Material.matchMaterial(value));
-				}
+			if (key.contains("input_") && Material.matchMaterial(value) != null) {
+				book.addInputConfig(Material.matchMaterial(value));
 			}
 		}
 		// serializing the book and saving as lore
 		String bookValue = book.toString();
-		List<String> loreList = new ArrayList<String>();
+		List<String> loreList = new ArrayList<>();
 		// hidden value
 		loreList.add(convertToInvisibleString(bookValue));
 		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
@@ -80,68 +78,57 @@ public class HopperConfiguring {
 
 		// loading the book materials
 		Player p = Bukkit.getPlayer(player);
-		Book book = (Book) Book.fromString(bookValue);
+		Book book = Book.fromString(bookValue);
 		book.emptyInputConfig();
 
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
-			if (key.contains("input_")) {
-				if (Material.matchMaterial(value) != null) {
-					book.addInputConfig(Material.matchMaterial(value));
-				}
+			if (key.contains("input_") && Material.matchMaterial(value) != null) {
+				book.addInputConfig(Material.matchMaterial(value));
 			}
 		}
 		// serializing the book and saving as lore
 		String bookValueNew = book.toString();
-		List<String> loreList = new ArrayList<String>();
+		List<String> loreList = new ArrayList<>();
 		// hidden value
 		loreList.add(convertToInvisibleString(bookValueNew));
-		ItemStack replaceItem;
-
-		// setting the item that is going to be edited
-		if (p.getInventory().getItemInMainHand() != null
-				&& p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
-				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && !p.getInventory().getItemInMainHand()
-						.getItemMeta().getLore().get(0).replace("§", "").equals(bookValue)) {
-			replaceItem = p.getInventory().getItemInMainHand();
-		} else if (Frame.getFRAME(book.getFrameID()) != null && Frame.getFRAME(book.getFrameID()).getFrame() != null) {
-			replaceItem = Frame.getFRAME(book.getFrameID()).getFrame().getItem();
-		} else {
-			throw new NullPointerException("Error trying to find the edited config item");
-		}
+		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
 
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
 
-		@SuppressWarnings("deprecation")
 		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
 				.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
 						plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse")
-								+ "?configData=" + URLEncoder.encode(bookValue)))
+								+ "?configData="
+								+ URLEncoder.encode(book.toString(), java.nio.charset.StandardCharsets.UTF_8.toString())))
 				.create();
 
 		meta.spigot().addPage(editPage);
 
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
-		if(p.getInventory().getItemInMainHand() != null
-				&& p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
+		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
 				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && !p.getInventory().getItemInMainHand()
 						.getItemMeta().getLore().get(0).replace("§", "").equals(bookValue)) {
 			p.getInventory().setItemInMainHand(replaceItem);
-		}else {
-			Frame.getFRAME(book.getFrameID()).getFrame().setItem(replaceItem);
+		} else if (Frame.getFRAME(book.getFrameID()) != null
+				&& Frame.getFRAME(book.getFrameID()).getEntityFrame() != null) {
+			Frame.getFRAME(book.getFrameID()).getEntityFrame().setItem(replaceItem);
+		} else {
+			throw new NullPointerException("Error trying to find the edited config item");
 		}
+		book.addSelf(book.getFrameID());
 
 	}
 
 	private static String convertToInvisibleString(String s) {
-		String hidden = "";
+		StringBuilder hidden = new StringBuilder();
 		for (char c : s.toCharArray())
-			hidden += ChatColor.COLOR_CHAR + "" + c;
-		return hidden;
+			hidden.append(ChatColor.COLOR_CHAR + "" + c);
+		return hidden.toString();
 	}
 
 }

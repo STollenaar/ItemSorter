@@ -28,19 +28,19 @@ public class HopperInteractHandler implements Listener {
 
 	public HopperInteractHandler(ItemSorter plugin) {
 		this.plugin = plugin;
-		this.database = this.plugin.database;
+		this.database = this.plugin.getDatabase();
 	}
 
 	// handling configuring of the frames
 	@EventHandler
-	public void onHopperConfigEvent(PlayerInteractEntityEvent event) {
+	public void onHopperInteractEvent(PlayerInteractEntityEvent event) {
 		if (event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
 
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
 			if (frame.getItem().getType() == Material.AIR) {
-				if (event.getPlayer().getInventory().getItemInMainHand() != null) {
+				if (event.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR) {
 					// getting to configure
 					if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
 						database.savePlayer(event.getPlayer().getUniqueId(), frameID);
@@ -61,13 +61,12 @@ public class HopperInteractHandler implements Listener {
 						if (meta.hasLore()) {
 							String bookValue = meta.getLore().get(0).replace("§", "");
 							try {
-								Book b = (Book) Book.fromString(bookValue);
+								Book b = Book.fromString(bookValue);
 								b.addSelf(frameID);
 
 							} catch (ClassNotFoundException | IOException e) {
 								// no need for logging, if the item is a written book and has lore, but is not
 								// from this plugin it can throw this error.
-								return;
 							}
 						}
 					}
@@ -86,7 +85,6 @@ public class HopperInteractHandler implements Listener {
 					} catch (ClassNotFoundException | IOException e) {
 						// no need for logging, if the item is a written book and has lore, but is not
 						// from this plugin it can throw this error.
-						return;
 					}
 				}
 			}
@@ -96,12 +94,8 @@ public class HopperInteractHandler implements Listener {
 	// handling item frame place event
 	@EventHandler
 	public void onItemFramePlaceEvent(HangingPlaceEvent event) {
-		if (event.getEntity().getType() == EntityType.ITEM_FRAME) {
-
-			// filtering to correct one
-			if (event.getBlock().getType() == Material.HOPPER) {
-				database.saveHoppers(event.getBlock().getLocation(), event.getEntity().getLocation());
-			}
+		if (event.getEntity().getType() == EntityType.ITEM_FRAME && event.getBlock().getType() == Material.HOPPER) {
+			database.saveHoppers(event.getBlock().getLocation(), event.getEntity().getLocation());
 		}
 	}
 
@@ -145,12 +139,11 @@ public class HopperInteractHandler implements Listener {
 		if (event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK
 				&& event.getItem().getItemMeta().hasLore()) {
 			try {
-				Book book = (Book) Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));
+				Book book = Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));
 				database.savePlayer(event.getPlayer().getUniqueId(), book.toString());
 			} catch (ClassNotFoundException | IOException e) {
 				// no need for logging, if the item is a written book and has lore, but is not
 				// from this plugin it can throw this error.
-				return;
 			}
 		}
 	}

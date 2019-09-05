@@ -127,7 +127,7 @@ public class Frame {
 		}
 	}
 
-	public ItemFrame getFrame() {
+	public ItemFrame getEntityFrame() {
 		Location frameLoc = new Location(Bukkit.getWorld(world), x, y, z, yaw, pitch);
 		for (Entity ent : frameLoc.getChunk().getEntities()) {
 			// getting the right item frame

@@ -26,9 +26,9 @@ public class HopperHandler implements Listener {
 
 			@SuppressWarnings("unchecked")
 			List<Integer> frames = (List<Integer>) database.getSavedItemFrameByHopperID(hopperID, "id");
-			if (frames.size() != 0) {
+			if (!frames.isEmpty()) {
 				List<Book> books = Book.getBook(frames);
-				if (books.size() != 0) {
+				if (!books.isEmpty()) {
 					for (Book book : books) {
 						if (!book.hasInputConfig(event.getItem().getType())) {
 							event.setCancelled(true);

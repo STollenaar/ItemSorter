@@ -69,14 +69,14 @@ public class Database {
 			saveFrames(hopperLocation, frameLocation);
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -97,14 +97,14 @@ public class Database {
 			saveFrames(rs.getInt("id"), frameLocation);
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -127,14 +127,14 @@ public class Database {
 			pst.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -149,14 +149,14 @@ public class Database {
 			pst.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -183,14 +183,14 @@ public class Database {
 			pst.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -218,14 +218,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return false;
@@ -255,14 +255,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return false;
@@ -281,14 +281,14 @@ public class Database {
 			return rs.next();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return false;
@@ -305,14 +305,14 @@ public class Database {
 			return rs.next();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return false;
@@ -341,14 +341,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return false;
@@ -361,7 +361,7 @@ public class Database {
 				frames.add(Frame.getFRAME(frameLocation).getField(field));
 			}
 		}
-		if (frames.size() != 0) {
+		if (!frames.isEmpty()) {
 			return frames;
 		}
 
@@ -378,14 +378,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return frames;
@@ -415,14 +415,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return null;
@@ -446,14 +446,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return null;
@@ -472,14 +472,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 		return null;
@@ -504,14 +504,14 @@ public class Database {
 					pst.execute();
 
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Bukkit.getLogger().log(Level.SEVERE, e.toString());
 				} finally {
 					try {
 						if (pst != null) {
 							pst.close();
 						}
-					} catch (SQLException ex) {
-						System.out.println(ex.getStackTrace());
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
 					}
 				}
 			}
@@ -539,14 +539,14 @@ public class Database {
 					pst.execute();
 
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Bukkit.getLogger().log(Level.SEVERE, e.toString());
 				} finally {
 					try {
 						if (pst != null) {
 							pst.close();
 						}
-					} catch (SQLException ex) {
-						System.out.println(ex.getStackTrace());
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
 					}
 
 				}
@@ -570,14 +570,14 @@ public class Database {
 					pst.execute();
 
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Bukkit.getLogger().log(Level.SEVERE, e.toString());
 				} finally {
 					try {
 						if (pst != null) {
 							pst.close();
 						}
-					} catch (SQLException ex) {
-						System.out.println(ex.getStackTrace());
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
 					}
 				}
 			}
@@ -599,14 +599,14 @@ public class Database {
 					pst.execute();
 
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Bukkit.getLogger().log(Level.SEVERE, e.toString());
 				} finally {
 					try {
 						if (pst != null) {
 							pst.close();
 						}
-					} catch (SQLException ex) {
-						System.out.println(ex.getStackTrace());
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
 					}
 				}
 			}
@@ -624,14 +624,14 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -644,27 +644,23 @@ public class Database {
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
 				Frame frame = new Frame(rs);
-				ItemFrame fr = frame.getFrame();
+				ItemFrame fr = frame.getEntityFrame();
 				if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
 						&& fr.getItem().getItemMeta().hasLore()) {
-					Book book = (Book) Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replace("§", ""));
+					Book book = Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replace("§", ""));
 					book.addSelf(frame.getId());
 				}
 			}
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (SQLException | ClassNotFoundException | IOException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}
@@ -686,14 +682,14 @@ public class Database {
 					plugin.getLogger().log(Level.WARNING,
 							"Old non supported version detected, updating current deployed books. This can take a while!");
 					for (Location loc : Frame.getFrames()) {
-						ItemFrame fr = Frame.getFRAME(loc).getFrame();
+						ItemFrame fr = Frame.getFRAME(loc).getEntityFrame();
 						if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK) {
 							ItemStack item = fr.getItem();
 							BookMeta meta = (BookMeta) item.getItemMeta();
 
 							if (!meta.getPage(meta.getPageCount()).contains("To edit the configuration click here.")) {
 
-								Book book = (Book) Book.fromString(meta.getLore().get(0).replace("§", ""));
+								Book book = Book.fromString(meta.getLore().get(0).replace("§", ""));
 
 								BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
 										.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
@@ -724,14 +720,14 @@ public class Database {
 		} catch (SQLException | ClassNotFoundException |
 
 				IOException e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-			} catch (SQLException ex) {
-				System.out.println(ex.getStackTrace());
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
 	}

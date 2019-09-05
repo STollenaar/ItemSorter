@@ -3,13 +3,16 @@ package tollenaar.stephen.ItemSorter.Core;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -30,7 +33,7 @@ import tollenaar.stephen.ItemSorter.Util.Item;
 
 public class ItemSorter extends JavaPlugin {
 
-	public Database database;
+	private Database database;
 	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
 	private static Javalin app;
@@ -67,8 +70,8 @@ public class ItemSorter extends JavaPlugin {
 			reader.close();
 			jar.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-			// disbling this server
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+			// disabling this server
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
@@ -93,11 +96,12 @@ public class ItemSorter extends JavaPlugin {
 		try {
 			app.stop();
 		} catch (Exception e) {
-			System.out.println("App stopped with errors");
+			Bukkit.getLogger().log(Level.SEVERE, "App stopped with errors");
 		}
 	}
 
-	private static void addSoftwareLibrary(File file) throws Exception {
+	private static void addSoftwareLibrary(File file) throws NoSuchMethodException,
+			IllegalAccessException, InvocationTargetException, MalformedURLException {
 		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
 		method.setAccessible(true);
 		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
@@ -109,16 +113,21 @@ public class ItemSorter extends JavaPlugin {
 			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
 					+ "websocket-server-9.4.20.v20190813.jar"));
 		} catch (Exception e) {
-			e.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		}
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
 		app = Javalin.create(config -> config.addStaticFiles("/web")).start(config.getInt("port"));
+		appInitalize();
+		
+		Thread.currentThread().setContextClassLoader(classLoader);
+	}
 
+	private void appInitalize() {
 		app.post("/" + config.getString("postConfigResponse"), ctx -> {
 			try {
-				String userCode = (String) ctx.formParam("userCode");
+				String userCode = ctx.formParam("userCode");
 				int frameID = Integer.parseInt(ctx.formParam("frameID"));
 				if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
@@ -129,14 +138,14 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 			}
 			ctx.render("/web/response.html");
 		});
 
 		app.get("/" + config.getString("initialPageResponse"), ctx -> {
 			try {
-				String userCode = (String) ctx.queryParam("userCode");
+				String userCode = ctx.queryParam("userCode");
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
@@ -158,15 +167,14 @@ public class ItemSorter extends JavaPlugin {
 
 		app.get("/" + config.getString("editPageResponse"), ctx -> {
 			try {
-				String bookValue = (String) ctx.queryParam("configData");
-				List<String> checkItems = ((Book) Book.fromString(bookValue)).toItems();
+				String bookValue = ctx.queryParam("configData");
+				List<String> checkItems = Book.fromString(bookValue).toItems();
 				String user = database.getSavedPlayer(bookValue);
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
 				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
-				ctx.attribute("edit", true);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayer(bookValue)) {
 					ctx.attribute("response", "You're not supposed to be here!!");
@@ -175,7 +183,7 @@ public class ItemSorter extends JavaPlugin {
 
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -183,8 +191,8 @@ public class ItemSorter extends JavaPlugin {
 
 		app.post("/" + config.getString("postEditPageResponse"), ctx -> {
 			try {
-				String bookValue = (String) ctx.formParam("bookValue");
-				String userCode = (String) ctx.formParam("userCode");
+				String bookValue = ctx.formParam("bookValue");
+				String userCode = ctx.formParam("userCode");
 				if (database.hasSavedPlayer(bookValue)) {
 					hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
 					ctx.attribute("response", "Thank you. You can close this page now.");
@@ -203,7 +211,9 @@ public class ItemSorter extends JavaPlugin {
 			ctx.attribute("response", "You're not supposed to be here!!");
 			ctx.render("/web/response.html");
 		});
-
-		Thread.currentThread().setContextClassLoader(classLoader);
+	}
+	
+	public Database getDatabase() {
+		return database;
 	}
 }
