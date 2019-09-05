@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -141,6 +142,7 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("frameID", frameID);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
 				ctx.attribute("items", minecraftItems);
+				ctx.attribute("checkItems", new ArrayList<String>());
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					ctx.attribute("response", "You're not supposed to be here!!");

@@ -373,9 +373,9 @@ public class Database {
 			pst.setInt(1, hopperID);
 
 			ResultSet rs = pst.executeQuery();
-			if (rs.next()) {
-				new Frame(rs);
-				return rs.getObject(field);
+			while (rs.next()) {
+				Frame fr = new Frame(rs);
+				frames.add(fr.getField(field));
 			}
 
 		} catch (SQLException e) {
@@ -389,7 +389,7 @@ public class Database {
 				System.out.println(ex.getStackTrace());
 			}
 		}
-		return null;
+		return frames;
 	}
 
 	public Object getSavedItemFrameByLocation(Location frameLocation, String field) {

@@ -23,16 +23,20 @@ public class HopperHandler implements Listener {
 		if (event.getDestination().getType() == InventoryType.HOPPER
 				&& database.hasSavedHopper(event.getDestination().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
-			
+
 			@SuppressWarnings("unchecked")
 			List<Integer> frames = (List<Integer>) database.getSavedItemFrameByHopperID(hopperID, "id");
-			List<Book> books = Book.getBook(frames);
-			if(books.size() != 0){
-				for(Book book : books){
-					if(!book.hasInputConfig(event.getItem().getType())){
-						event.setCancelled(true);
+			if (frames.size() != 0) {
+				List<Book> books = Book.getBook(frames);
+				if (books.size() != 0) {
+					for (Book book : books) {
+						if (!book.hasInputConfig(event.getItem().getType())) {
+							event.setCancelled(true);
+						}
 					}
 				}
+			}else {
+				database.deleteHopper(event.getDestination().getLocation());
 			}
 		}
 	}
