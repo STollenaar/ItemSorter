@@ -129,7 +129,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -175,7 +175,7 @@ public class ItemSorter extends JavaPlugin {
 
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -194,7 +194,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
 			}
 			ctx.render("/web/response.html");
 		});

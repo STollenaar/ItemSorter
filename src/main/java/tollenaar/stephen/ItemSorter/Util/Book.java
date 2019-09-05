@@ -24,8 +24,10 @@ public class Book implements Serializable {
 	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting
 															// configure
-
+	private int frameID;
+	
 	public Book(int frameID) {
+		this.frameID = frameID;
 		this.addSelf(frameID);
 	}
 
@@ -62,25 +64,43 @@ public class Book implements Serializable {
 
 		return pages;
 	}
-	
-	private String getDisplayName(Material material){
+
+	private String getDisplayName(Material material) {
 		return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
 	}
 
 	public void addInputConfig(Material material) {
 		this.inputConfig.add(material);
 	}
-	
-	public void emptyInputConfig(){
+
+	public void emptyInputConfig() {
 		this.inputConfig = new ArrayList<>();
 	}
-	
-	public List<String> toItems(){
+
+	public List<String> toItems() {
 		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {
 			items.add(getDisplayName(material));
 		}
 		return items;
+	}
+
+	/** Write the object to a Base64 string. */
+	public String toString() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos;
+		try {
+			oos = new ObjectOutputStream(baos);
+			oos.writeObject(this);
+			oos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+
+	public int getFrameID() {
+		return frameID;
 	}
 
 	public static Book getBook(int frameID) {
@@ -90,7 +110,7 @@ public class Book implements Serializable {
 
 		return BOOKS.get(frameID);
 	}
-
+	
 	public static List<Book> getBook(List<Integer> frameIDs) {
 		List<Book> tmp = new ArrayList<>();
 		for (int frameID : frameIDs) {
@@ -115,20 +135,6 @@ public class Book implements Serializable {
 		Object o = ois.readObject();
 		ois.close();
 		return (Book) o;
-	}
-
-	/** Write the object to a Base64 string. */
-	public String toString() {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos;
-		try {
-			oos = new ObjectOutputStream(baos);
-			oos.writeObject(this);
-			oos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return Base64.getEncoder().encodeToString(baos.toByteArray());
 	}
 
 }

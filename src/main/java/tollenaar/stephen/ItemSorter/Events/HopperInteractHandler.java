@@ -39,7 +39,7 @@ public class HopperInteractHandler implements Listener {
 
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
-			if (frame.getItem() == null) {
+			if (frame.getItem().getType() == Material.AIR) {
 				if (event.getPlayer().getInventory().getItemInMainHand() != null) {
 					// getting to configure
 					if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
@@ -64,10 +64,10 @@ public class HopperInteractHandler implements Listener {
 								Book b = (Book) Book.fromString(bookValue);
 								b.addSelf(frameID);
 
-								// String name = b.toItems().toString().replace("[", "").replace("]", "");
-								// new Hologram(event.getRightClicked(), name);
-
 							} catch (ClassNotFoundException | IOException e) {
+								// no need for logging, if the item is a written book and has lore, but is not
+								// from this plugin it can throw this error.
+								return;
 							}
 						}
 					}
@@ -81,9 +81,12 @@ public class HopperInteractHandler implements Listener {
 						Book.fromString(bookValue);
 						// opening the book
 						event.getPlayer().openBook(frame.getItem());
+						database.savePlayer(event.getPlayer().getUniqueId(), bookValue);
 						event.setCancelled(true);
 					} catch (ClassNotFoundException | IOException e) {
-						e.printStackTrace();
+						// no need for logging, if the item is a written book and has lore, but is not
+						// from this plugin it can throw this error.
+						return;
 					}
 				}
 			}
@@ -140,11 +143,14 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
 		if (event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK
-				&& event.getItem().getItemMeta().getLore().size() == 1) {
+				&& event.getItem().getItemMeta().hasLore()) {
 			try {
-				Book book = (Book) Book.fromString(event.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
+				Book book = (Book) Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));
 				database.savePlayer(event.getPlayer().getUniqueId(), book.toString());
 			} catch (ClassNotFoundException | IOException e) {
+				// no need for logging, if the item is a written book and has lore, but is not
+				// from this plugin it can throw this error.
+				return;
 			}
 		}
 	}

@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -645,19 +644,11 @@ public class Database {
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
 				Frame frame = new Frame(rs);
-				Location frameLoc = new Location(Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(),
-						frame.getZ(), frame.getYaw(), frame.getPitch());
-				for (Entity ent : frameLoc.getChunk().getEntities()) {
-					// getting the right item frame
-					if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
-						ItemFrame fr = (ItemFrame) ent;
-						if (fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
-								&& fr.getItem().getItemMeta().hasLore()) {
-							Book book = (Book) Book
-									.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
-							book.addSelf(frame.getId());
-						}
-					}
+				ItemFrame fr = frame.getFrame();
+				if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
+						&& fr.getItem().getItemMeta().hasLore()) {
+					Book book = (Book) Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replace("§", ""));
+					book.addSelf(frame.getId());
 				}
 			}
 
@@ -684,43 +675,42 @@ public class Database {
 			pst = getConnection().prepareStatement("SELECT * FROM `Version`;");
 			ResultSet rs = pst.executeQuery();
 			if (!rs.next()) {
-				plugin.getLogger().log(Level.WARNING, "Newly created table, adding values and reloading the loaded configurations. This can tkae a while!!");
+				plugin.getLogger().log(Level.WARNING,
+						"Newly created table, adding values and reloading the loaded configurations. This can tkae a while!!");
 				pst.close();
 				pst = getConnection().prepareStatement("INSERT INTO `Version` (`version`) VALUES (1.0);");
 				pst.execute();
 				load();
 			} else {
 				if (rs.getString("version").equals("1.0")) {
-					plugin.getLogger().log(Level.WARNING, "Old non supported version detected, updating current deployed books. This can take a while!");
-					for(Location loc : Frame.getFrames()){
-						for (Entity ent : loc.getChunk().getEntities()) {
-							// getting the right item frame
-							if (ent instanceof ItemFrame && ent.getLocation().equals(loc)) {
-								ItemFrame fr = (ItemFrame) ent;
-								if(fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK){
-									ItemStack item = fr.getItem();
-									BookMeta meta = (BookMeta) item.getItemMeta();
-									
-									if(!meta.getPage(meta.getPageCount()).contains("To edit the configuration click here.")){
-									
-									Book book = (Book) Book.fromString(meta.getLore().get(0).replaceAll("§", ""));
-									
-									BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-											.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
-													+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(book.toString(), "UTF-8")))
-											.create();
+					plugin.getLogger().log(Level.WARNING,
+							"Old non supported version detected, updating current deployed books. This can take a while!");
+					for (Location loc : Frame.getFrames()) {
+						ItemFrame fr = Frame.getFRAME(loc).getFrame();
+						if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK) {
+							ItemStack item = fr.getItem();
+							BookMeta meta = (BookMeta) item.getItemMeta();
 
-									meta.spigot().addPage(editPage);
+							if (!meta.getPage(meta.getPageCount()).contains("To edit the configuration click here.")) {
 
-									// changing the item frame item
-									item.setItemMeta(meta);
-									}
-								}
+								Book book = (Book) Book.fromString(meta.getLore().get(0).replace("§", ""));
+
+								BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
+										.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
+												plugin.getConfig().getString("URL")
+														+ plugin.getConfig().getString("editPageResponse")
+														+ "?configData=" + URLEncoder.encode(book.toString(), "UTF-8")))
+										.create();
+
+								meta.spigot().addPage(editPage);
+
+								// changing the item frame item
+								item.setItemMeta(meta);
 							}
 						}
 					}
 				}
-				if(!rs.getString("version").equals(VERSION)){
+				if (!rs.getString("version").equals(VERSION)) {
 					plugin.getLogger().log(Level.WARNING, "Updating Version.");
 					String old = rs.getString("version");
 					pst.close();
@@ -731,7 +721,9 @@ public class Database {
 				}
 			}
 
-		} catch (SQLException | ClassNotFoundException | IOException e) {
+		} catch (SQLException | ClassNotFoundException |
+
+				IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {

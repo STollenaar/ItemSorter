@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 
 public class Frame {
 	private static Map<Location, Frame> FRAMES;
@@ -125,6 +127,17 @@ public class Frame {
 		}
 	}
 
+	public ItemFrame getFrame() {
+		Location frameLoc = new Location(Bukkit.getWorld(world), x, y, z, yaw, pitch);
+		for (Entity ent : frameLoc.getChunk().getEntities()) {
+			// getting the right item frame
+			if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
+				return (ItemFrame) ent;
+			}
+		}
+		return null;
+	}
+
 	public static Frame getFRAME(Location location) {
 		if (FRAMES == null) {
 			FRAMES = new HashMap<>();
@@ -146,10 +159,10 @@ public class Frame {
 		return null;
 	}
 
-	public static Set<Location> getFrames(){
+	public static Set<Location> getFrames() {
 		return FRAMES.keySet();
 	}
-	
+
 	public static void removeFRAME(Location location) {
 		if (FRAMES == null) {
 			FRAMES = new HashMap<>();
