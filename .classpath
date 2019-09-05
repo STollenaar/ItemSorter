@@ -16,8 +16,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Stephen/Dropbox/plugin libraries/spigot.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Stephen/Dropbox/plugin libraries/sqlite-jdbc-3.27.2.1.jar"/>
 	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
