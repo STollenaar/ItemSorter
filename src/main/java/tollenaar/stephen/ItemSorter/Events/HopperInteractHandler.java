@@ -3,7 +3,6 @@ package tollenaar.stephen.ItemSorter.Events;
 import java.io.IOException;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -12,24 +11,16 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-import io.netty.buffer.Unpooled;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_14_R1.EnumHand;
-import net.minecraft.server.v1_14_R1.MinecraftKey;
-import net.minecraft.server.v1_14_R1.PacketDataSerializer;
-import net.minecraft.server.v1_14_R1.PacketPlayOutCustomPayload;
 import tollenaar.stephen.ItemSorter.Core.Database;
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
 import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.Hologram;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
 
 public class HopperInteractHandler implements Listener {
 	private Database database;
@@ -48,7 +39,7 @@ public class HopperInteractHandler implements Listener {
 
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
-			if (frame.isEmpty()) {
+			if (frame.getItem() == null) {
 				if (event.getPlayer().getInventory().getItemInMainHand() != null) {
 					// getting to configure
 					if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
@@ -84,21 +75,12 @@ public class HopperInteractHandler implements Listener {
 				// forcing the book to open to the player
 			} else if (frame.getItem().getType() == Material.WRITTEN_BOOK) {
 				BookMeta meta = (BookMeta) frame.getItem().getItemMeta();
-				System.out.println(meta.hasLore());
 				if (meta.hasLore()) {
 					String bookValue = meta.getLore().get(0).replace("§", "");
 					try {
-						Book b = (Book) Book.fromString(bookValue);
+						Book.fromString(bookValue);
 						// opening the book
-						Player player = event.getPlayer();
-						int slot = player.getInventory().getHeldItemSlot();
-						ItemStack old = player.getInventory().getItem(slot);
-						player.getInventory().setItem(slot, frame.getItem());
-						PacketPlayOutCustomPayload packet = new PacketPlayOutCustomPayload(
-								MinecraftKey.a("minecraft:open_book"),
-								new PacketDataSerializer(Unpooled.buffer()).a(EnumHand.MAIN_HAND));
-						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
-						player.getInventory().setItem(slot, old);
+						event.getPlayer().openBook(frame.getItem());
 						event.setCancelled(true);
 					} catch (ClassNotFoundException | IOException e) {
 						e.printStackTrace();
@@ -134,9 +116,6 @@ public class HopperInteractHandler implements Listener {
 	public void onFrameBreakEvent(HangingBreakEvent event) {
 		if (database.hasSavedItemFrame(event.getEntity().getLocation())) {
 			database.deleteFrame(event.getEntity().getLocation());
-			if (Hologram.hologramExistsAtLocation(event.getEntity().getLocation())) {
-				Hologram.removeHologramAtLocation(event.getEntity().getLocation());
-			}
 		}
 	}
 
@@ -155,9 +134,6 @@ public class HopperInteractHandler implements Listener {
 			}
 
 			Book.removeBook((int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
-			if (Hologram.hologramExistsAtLocation(event.getEntity().getLocation())) {
-				Hologram.removeHologramAtLocation(event.getEntity().getLocation());
-			}
 		}
 	}
 
