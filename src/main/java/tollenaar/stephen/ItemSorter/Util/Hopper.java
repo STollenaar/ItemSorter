@@ -19,7 +19,7 @@ public class Hopper {
 
 	public Hopper(ResultSet rs) throws SQLException {
 		this(rs.getInt("id"), rs.getDouble("hopperX"), rs.getDouble("hopperY"), rs.getDouble("hopperZ"),
-				rs.getString("hopperWorld"));
+			rs.getString("hopperWorld"));
 	}
 
 	public Hopper(int id, double x, double y, double z, String world) {
@@ -73,18 +73,18 @@ public class Hopper {
 
 	public Object getField(String field) {
 		switch (field) {
-		case "id":
-			return getId();
-		case "hopperX":
-			return getX();
-		case "hopperY":
-			return getY();
-		case "hopperZ":
-			return getZ();
-		case "hopperWorld":
-			return getWorld();
-		default:
-			throw new NullPointerException("Unknown Field");
+			case "id":
+				return getId();
+			case "hopperX":
+				return getX();
+			case "hopperY":
+				return getY();
+			case "hopperZ":
+				return getZ();
+			case "hopperWorld":
+				return getWorld();
+			default:
+				throw new NullPointerException("Unknown Field");
 		}
 	}
 

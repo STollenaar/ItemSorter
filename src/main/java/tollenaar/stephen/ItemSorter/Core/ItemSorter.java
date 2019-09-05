@@ -29,7 +29,6 @@ import tollenaar.stephen.ItemSorter.Util.Book;
 import tollenaar.stephen.ItemSorter.Util.Item;
 
 public class ItemSorter extends JavaPlugin {
-
 	public Database database;
 	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
@@ -107,7 +106,7 @@ public class ItemSorter extends JavaPlugin {
 
 		try {
 			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
-					+ "websocket-server-9.4.20.v20190813.jar"));
+				+ "websocket-server-9.4.20.v20190813.jar"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -129,7 +128,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+					"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -148,12 +147,10 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "You're not supposed to be here!!");
 					ctx.render("/web/response.html");
 				}
-
 			} catch (Exception ex) {
 				ctx.attribute("response", "You're not supposed to be here!!");
 				ctx.render("/web/response.html");
 			}
-
 		});
 
 		app.get("/" + config.getString("editPageResponse"), ctx -> {
@@ -172,13 +169,11 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "You're not supposed to be here!!");
 					ctx.render("/web/response.html");
 				}
-
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+					"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 				ctx.render("/web/response.html");
 			}
-
 		});
 
 		app.post("/" + config.getString("postEditPageResponse"), ctx -> {
@@ -194,7 +189,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+					"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
 			}
 			ctx.render("/web/response.html");
 		});

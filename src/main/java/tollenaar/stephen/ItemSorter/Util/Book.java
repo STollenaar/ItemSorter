@@ -19,11 +19,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Book implements Serializable {
-
 	private static final long serialVersionUID = 4519138450923555946L;
 	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting
-															// configure
+	// configure
 
 	public Book(int frameID) {
 		this.addSelf(frameID);
@@ -56,13 +55,13 @@ public class Book implements Serializable {
 		for (int i = 0; i < inputConfigList.size(); i += 14) {
 			int maxSub = Math.min(inputConfigList.size() - i, 13);
 			String page = inputConfigList.subList(i, i + maxSub).toString().replace("]", "").replace("[", "")
-					.replace(",", "\n");
+				.replace(",", "\n");
 			pages.add(page);
 		}
 
 		return pages;
 	}
-	
+
 	private String getDisplayName(Material material){
 		return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
 	}
@@ -70,11 +69,11 @@ public class Book implements Serializable {
 	public void addInputConfig(Material material) {
 		this.inputConfig.add(material);
 	}
-	
+
 	public void emptyInputConfig(){
 		this.inputConfig = new ArrayList<>();
 	}
-	
+
 	public List<String> toItems(){
 		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {

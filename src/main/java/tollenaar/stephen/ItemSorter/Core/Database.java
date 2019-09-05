@@ -30,7 +30,6 @@ import tollenaar.stephen.ItemSorter.Util.Frame;
 import tollenaar.stephen.ItemSorter.Util.Hopper;
 
 public class Database {
-
 	private ItemSorter plugin;
 	private Connection connection;
 	private static final String VERSION = "1.1";
@@ -49,7 +48,8 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
-					"SELECT * FROM `Hoppers` WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+				"SELECT * FROM `Hoppers` WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;"
+			);
 			pst.setDouble(1, hopperLocation.getX());
 			pst.setDouble(2, hopperLocation.getY());
 			pst.setDouble(3, hopperLocation.getZ());
@@ -59,7 +59,7 @@ public class Database {
 			if (!rs.next()) {
 				pst.close();
 				pst = getConnection().prepareStatement("INSERT INTO `Hoppers` ("
-						+ "`hopperX`, `hopperY`, `hopperZ`, `hopperWorld`) " + "VALUES (?,?,?,?);");
+					+ "`hopperX`, `hopperY`, `hopperZ`, `hopperWorld`) " + "VALUES (?,?,?,?);");
 
 				pst.setDouble(1, hopperLocation.getX());
 				pst.setDouble(2, hopperLocation.getY());
@@ -68,7 +68,6 @@ public class Database {
 				pst.execute();
 			}
 			saveFrames(hopperLocation, frameLocation);
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -86,7 +85,8 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
-					"SELECT * FROM Hoppers WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+				"SELECT * FROM Hoppers WHERE `hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;"
+			);
 			pst.setDouble(1, hopperLocation.getX());
 			pst.setDouble(2, hopperLocation.getY());
 			pst.setDouble(3, hopperLocation.getZ());
@@ -96,7 +96,6 @@ public class Database {
 
 			new Hopper(rs);
 			saveFrames(rs.getInt("id"), frameLocation);
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -115,8 +114,9 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement(
-					"INSERT INTO `Frames` (`hopper_id`, `frameX`, `frameY`, `frameZ`, `frameWorld`,`frameYaw`, `framePitch`) "
-							+ "VALUES (?,?,?,?,?,?,?);");
+				"INSERT INTO `Frames` (`hopper_id`, `frameX`, `frameY`, `frameZ`, `frameWorld`,`frameYaw`, `framePitch`) " +
+					"VALUES (?,?,?,?,?,?,?);"
+			);
 
 			pst.setInt(1, hopperID);
 			pst.setDouble(2, frameLocation.getX());
@@ -126,7 +126,6 @@ public class Database {
 			pst.setFloat(6, frameLocation.getYaw());
 			pst.setFloat(7, frameLocation.getPitch());
 			pst.execute();
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -148,7 +147,6 @@ public class Database {
 			pst.setString(1, playerUUID.toString());
 			pst.setInt(2, frameID);
 			pst.execute();
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -171,18 +169,15 @@ public class Database {
 
 			if (rs.next()) {
 				pst.close();
-				pst = getConnection()
-						.prepareStatement("UPDATE `EditUserConfigs` SET `userUUID`=? WHERE `bookValue`=?;");
+				pst = getConnection().prepareStatement("UPDATE `EditUserConfigs` SET `userUUID`=? WHERE `bookValue`=?;");
 			} else {
 				pst.close();
-				pst = getConnection()
-						.prepareStatement("INSERT INTO `EditUserConfigs` (`userUUID`, `bookValue`) VALUES (?,?);");
+				pst = getConnection().prepareStatement("INSERT INTO `EditUserConfigs` (`userUUID`, `bookValue`) VALUES (?,?);");
 			}
 			pst.setString(1, playerUUID.toString());
 			pst.setString(2, bookValue);
 
 			pst.execute();
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -203,8 +198,10 @@ public class Database {
 
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `Hoppers` WHERE "
-					+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+			pst = getConnection().prepareStatement(
+				"SELECT * FROM `Hoppers` WHERE " +
+					"`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;"
+			);
 
 			pst.setDouble(1, hopper.getX());
 			pst.setDouble(2, hopper.getY());
@@ -217,7 +214,6 @@ public class Database {
 				new Hopper(rs);
 				return true;
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -239,8 +235,10 @@ public class Database {
 
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE "
-					+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
+			pst = getConnection().prepareStatement(
+				"SELECT * FROM `Frames` WHERE " +
+					"`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;"
+			);
 
 			pst.setDouble(1, frameLocation.getX());
 			pst.setDouble(2, frameLocation.getY());
@@ -254,7 +252,6 @@ public class Database {
 				new Frame(rs);
 				return true;
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -273,7 +270,7 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection()
-					.prepareStatement("SELECT * FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
+				.prepareStatement("SELECT * FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
 
 			pst.setString(1, player.toString());
 			pst.setInt(2, frameID);
@@ -327,7 +324,7 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement("SELECT * FROM `Hoppers` WHERE "
-					+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+				+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
 			pst.setDouble(1, hopper.getX());
 			pst.setDouble(2, hopper.getY());
@@ -400,7 +397,7 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			pst = getConnection().prepareStatement("SELECT * FROM `Frames` WHERE "
-					+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
+				+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
 
 			pst.setDouble(1, frameLocation.getX());
 			pst.setDouble(2, frameLocation.getY());
@@ -496,7 +493,7 @@ public class Database {
 				PreparedStatement pst = null;
 				try {
 					pst = getConnection().prepareStatement("DELETE FROM `Hoppers` WHERE "
-							+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+						+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
 					pst.setDouble(1, hopperLocation.getX());
 					pst.setDouble(2, hopperLocation.getY());
@@ -529,7 +526,7 @@ public class Database {
 				PreparedStatement pst = null;
 				try {
 					pst = getConnection().prepareStatement("DELETE FROM `Frames` WHERE "
-							+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
+						+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
 
 					pst.setDouble(1, frameLocation.getX());
 					pst.setDouble(2, frameLocation.getY());
@@ -564,7 +561,7 @@ public class Database {
 				PreparedStatement pst = null;
 				try {
 					pst = getConnection()
-							.prepareStatement("DELETE FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
+						.prepareStatement("DELETE FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
 
 					pst.setString(1, player.toString());
 					pst.setInt(2, frameID);
@@ -593,7 +590,7 @@ public class Database {
 				PreparedStatement pst = null;
 				try {
 					pst = getConnection().prepareStatement(
-							"DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
+						"DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
 
 					pst.setString(1, player.toString());
 					pst.setString(2, bookValue);
@@ -646,15 +643,15 @@ public class Database {
 			while (rs.next()) {
 				Frame frame = new Frame(rs);
 				Location frameLoc = new Location(Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(),
-						frame.getZ(), frame.getYaw(), frame.getPitch());
+					frame.getZ(), frame.getYaw(), frame.getPitch());
 				for (Entity ent : frameLoc.getChunk().getEntities()) {
 					// getting the right item frame
 					if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
 						ItemFrame fr = (ItemFrame) ent;
 						if (fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
-								&& fr.getItem().getItemMeta().hasLore()) {
+							&& fr.getItem().getItemMeta().hasLore()) {
 							Book book = (Book) Book
-									.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
+								.fromString(fr.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
 							book.addSelf(frame.getId());
 						}
 					}
@@ -700,20 +697,20 @@ public class Database {
 								if(fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK){
 									ItemStack item = fr.getItem();
 									BookMeta meta = (BookMeta) item.getItemMeta();
-									
+
 									if(!meta.getPage(meta.getPageCount()).contains("To edit the configuration click here.")){
-									
-									Book book = (Book) Book.fromString(meta.getLore().get(0).replaceAll("§", ""));
-									
-									BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
+
+										Book book = (Book) Book.fromString(meta.getLore().get(0).replaceAll("§", ""));
+
+										BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
 											.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
-													+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(book.toString(), "UTF-8")))
+												+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(book.toString(), "UTF-8")))
 											.create();
 
-									meta.spigot().addPage(editPage);
+										meta.spigot().addPage(editPage);
 
-									// changing the item frame item
-									item.setItemMeta(meta);
+										// changing the item frame item
+										item.setItemMeta(meta);
 									}
 								}
 							}
@@ -757,31 +754,31 @@ public class Database {
 		connection = getConnection();
 		try {
 			Statement statement = connection.createStatement();
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS Hoppers (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-					+ " hopperX REAL NOT NULL," + " hopperY REAL NOT NULL," + " hopperZ REAL NOT NULL,"
-					+ " hopperWorld TEXT NOT NULL);"
-					+ "CREATE TABLE IF NOT EXISTS Frames (id INTEGER PRIMARY KEY AUTOINCREMENT, hopper_id INTEGER NOT NULL, "
-					+ "frameX REAL NOT NULL," + " frameY REAL NOT NULL,"
-					+ " frameZ REAL NOT NULL, frameYaw REAL NOT NULL, framePitch REAL NOT NULL,"
-					+ " frameWorld TEXT NOT NULL," + " CONSTRAINT fk_Hoppers" + " FOREIGN KEY (hopper_id)"
-					+ " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
-					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
-					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS EditUserConfigs "
-					+ "(userUUID TEXT NOT NULL, bookValue TEXT PRIMARY KEY);"
-					+ "CREATE TABLE IF NOT EXISTS Version (version TEXT NOT NULL);");
+			statement.executeUpdate(
+				"CREATE TABLE IF NOT EXISTS Hoppers (id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"hopperX REAL NOT NULL," + " hopperY REAL NOT NULL," + " hopperZ REAL NOT NULL, " +
+					"hopperWorld TEXT NOT NULL);" +
+					"CREATE TABLE IF NOT EXISTS Frames (id INTEGER PRIMARY KEY AUTOINCREMENT, hopper_id INTEGER NOT NULL, " +
+					"frameX REAL NOT NULL," + " frameY REAL NOT NULL, " +
+					"frameZ REAL NOT NULL, frameYaw REAL NOT NULL, framePitch REAL NOT NULL, " +
+					" rameWorld TEXT NOT NULL," + " CONSTRAINT fk_Hoppers" + " FOREIGN KEY (hopper_id) " +
+					"REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;" +
+					"CREATE TABLE IF NOT EXISTS UserConfigs " +
+					"(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, " +
+					"CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;" +
+					"CREATE TABLE IF NOT EXISTS EditUserConfigs " +
+					"(userUUID TEXT NOT NULL, bookValue TEXT PRIMARY KEY);" +
+					"CREATE TABLE IF NOT EXISTS Version (version TEXT NOT NULL);"
+			);
 			statement.close();
 		} catch (SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getMessage());
 		}
-
 	}
 
 	public Connection getConnection() {
 		File db = new File(plugin.getDataFolder(), "hoppers.db");
 		if (!db.exists()) {
-
 			try {
 				db.createNewFile();
 			} catch (IOException e) {

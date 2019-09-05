@@ -12,16 +12,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
 public class Hologram {
-
 	private static Map<Location, Hologram> HOLOGRAMS;
-	
+
 	private Location hostLocation;
 	private List<Location> hologramLocations;
 
 	public Hologram(Entity host, String text) {
 		this.hologramLocations = new ArrayList<>();
 		this.hostLocation = host.getLocation();
-		
+
 		spawnText(hostLocation, text);
 		if(HOLOGRAMS == null){
 			HOLOGRAMS = new HashMap<>();
@@ -35,7 +34,7 @@ public class Hologram {
 		for (int i = 0; i < inputConfigList.size(); i += 4) {
 			int maxSub = Math.min(inputConfigList.size() - i, 3);
 			String line = inputConfigList.subList(i, i + maxSub).toString().replace("]", "").replace("[", "")
-					.replaceAll(",", "");
+				.replaceAll(",", "");
 			lines.add(line);
 		}
 		loc.setY(loc.getY()-2);
@@ -51,7 +50,7 @@ public class Hologram {
 			hologramLocations.add(stand.getLocation());
 		}
 	}
-	
+
 	private void removeText(){
 		for (Entity ent : hostLocation.getChunk().getEntities()) {
 			if(ent instanceof ArmorStand && hologramLocations.contains(ent.getLocation())){
@@ -60,26 +59,26 @@ public class Hologram {
 			}
 		}
 	}
-	
+
 	public void deleteHologram(){
 		removeText();
 		HOLOGRAMS.remove(hostLocation);
 	}
-	
+
 	public static Hologram getHologram(Location location){
 		if(hologramExistsAtLocation(location)){
 			return HOLOGRAMS.get(location);
 		}
 		return null;
 	}
-	
+
 	public static boolean hologramExistsAtLocation(Location location){
 		if(HOLOGRAMS == null){
 			HOLOGRAMS = new HashMap<>();
 		}
 		return HOLOGRAMS.get(location) != null;
 	}
-	
+
 	public static void removeHologramAtLocation(Location location){
 		if(hologramExistsAtLocation(location)){
 			getHologram(location).deleteHologram();

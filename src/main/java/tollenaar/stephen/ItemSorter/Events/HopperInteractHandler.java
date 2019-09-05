@@ -44,7 +44,7 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onHopperConfigEvent(PlayerInteractEntityEvent event) {
 		if (event.getRightClicked().getType() == EntityType.ITEM_FRAME
-				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
+			&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
 
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
@@ -55,8 +55,8 @@ public class HopperInteractHandler implements Listener {
 						database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
 						String url = plugin.getConfig().getString("URL")
-								+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
-								+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
+							+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
+							+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
 
 						TextComponent text = new TextComponent("Click here to configure the hopper sorting");
 						text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
@@ -65,7 +65,7 @@ public class HopperInteractHandler implements Listener {
 
 						// when replacing a configured book into an item frame
 					} else if (event.getPlayer().getInventory().getItemInMainHand()
-							.getType() == Material.WRITTEN_BOOK) {
+						.getType() == Material.WRITTEN_BOOK) {
 						BookMeta meta = (BookMeta) event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
 						if (meta.hasLore()) {
 							String bookValue = meta.getLore().get(0).replace("§", "");
@@ -75,8 +75,8 @@ public class HopperInteractHandler implements Listener {
 
 								// String name = b.toItems().toString().replace("[", "").replace("]", "");
 								// new Hologram(event.getRightClicked(), name);
-
 							} catch (ClassNotFoundException | IOException e) {
+								// TODO handle/explain exception
 							}
 						}
 					}
@@ -95,8 +95,8 @@ public class HopperInteractHandler implements Listener {
 						ItemStack old = player.getInventory().getItem(slot);
 						player.getInventory().setItem(slot, frame.getItem());
 						PacketPlayOutCustomPayload packet = new PacketPlayOutCustomPayload(
-								MinecraftKey.a("minecraft:open_book"),
-								new PacketDataSerializer(Unpooled.buffer()).a(EnumHand.MAIN_HAND));
+							MinecraftKey.a("minecraft:open_book"),
+							new PacketDataSerializer(Unpooled.buffer()).a(EnumHand.MAIN_HAND));
 						((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 						player.getInventory().setItem(slot, old);
 						event.setCancelled(true);
@@ -112,7 +112,6 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onItemFramePlaceEvent(HangingPlaceEvent event) {
 		if (event.getEntity().getType() == EntityType.ITEM_FRAME) {
-
 			// filtering to correct one
 			if (event.getBlock().getType() == Material.HOPPER) {
 				database.saveHoppers(event.getBlock().getLocation(), event.getEntity().getLocation());
@@ -143,15 +142,14 @@ public class HopperInteractHandler implements Listener {
 	// handling for when the player removes an item out of the item frame
 	@EventHandler
 	public void onItemRemoveEvent(EntityDamageByEntityEvent event) {
-
 		// filtering player and item frame
 		if (event.getDamager().getType() == EntityType.PLAYER && event.getEntityType() == EntityType.ITEM_FRAME
-				&& database.hasSavedItemFrame(event.getEntity().getLocation())) {
+			&& database.hasSavedItemFrame(event.getEntity().getLocation())) {
 
 			if (database.hasSavedPlayerWithItemFrame(event.getDamager().getUniqueId(),
-					(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"))) {
+				(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"))) {
 				database.deletePlayerWithFrame(event.getDamager().getUniqueId(),
-						(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
+					(int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
 			}
 
 			Book.removeBook((int) database.getSavedItemFrameByLocation(event.getEntity().getLocation(), "id"));
@@ -164,7 +162,7 @@ public class HopperInteractHandler implements Listener {
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
 		if (event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK
-				&& event.getItem().getItemMeta().getLore().size() == 1) {
+			&& event.getItem().getItemMeta().getLore().size() == 1) {
 			try {
 				Book book = (Book) Book.fromString(event.getItem().getItemMeta().getLore().get(0).replaceAll("§", ""));
 				database.savePlayer(event.getPlayer().getUniqueId(), book.toString());

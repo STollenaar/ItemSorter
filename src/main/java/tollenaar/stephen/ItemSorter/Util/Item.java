@@ -5,14 +5,14 @@ public class Item {
 	private int stackSize;
 	private String name;
 	private String displayName;
-	
+
 	public Item(int id, int stackSize, String name, String displayName){
 		this.id = id;
 		this.stackSize = stackSize;
 		this.name = name.toLowerCase();
 		this.displayName = displayName;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -37,5 +37,4 @@ public class Item {
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
-
 }

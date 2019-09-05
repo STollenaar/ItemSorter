@@ -23,7 +23,7 @@ public class Frame {
 
 	public Frame(ResultSet rs) throws SQLException {
 		this(rs.getInt("id"), rs.getInt("hopper_id"), rs.getDouble("frameX"), rs.getDouble("frameY"),
-				rs.getDouble("frameZ"), rs.getFloat("frameYaw"), rs.getFloat("framePitch"), rs.getString("frameWorld"));
+			rs.getDouble("frameZ"), rs.getFloat("frameYaw"), rs.getFloat("framePitch"), rs.getString("frameWorld"));
 	}
 
 	public Frame(int id, int hopperID, double x, double y, double z, float yaw, float pitch, String world) {
@@ -104,24 +104,24 @@ public class Frame {
 
 	public Object getField(String field) {
 		switch (field) {
-		case "id":
-			return getId();
-		case "frameX":
-			return getX();
-		case "frameY":
-			return getY();
-		case "frameZ":
-			return getZ();
-		case "frameWorld":
-			return getWorld();
-		case "framePitch":
-			return getPitch();
-		case "frameYaw":
-			return getYaw();
-		case "hopper_id":
-			return getHopperID();
-		default:
-			throw new NullPointerException("Unknown Field");
+			case "id":
+				return getId();
+			case "frameX":
+				return getX();
+			case "frameY":
+				return getY();
+			case "frameZ":
+				return getZ();
+			case "frameWorld":
+				return getWorld();
+			case "framePitch":
+				return getPitch();
+			case "frameYaw":
+				return getYaw();
+			case "hopper_id":
+				return getHopperID();
+			default:
+				throw new NullPointerException("Unknown Field");
 		}
 	}
 
@@ -149,7 +149,7 @@ public class Frame {
 	public static Set<Location> getFrames(){
 		return FRAMES.keySet();
 	}
-	
+
 	public static void removeFRAME(Location location) {
 		if (FRAMES == null) {
 			FRAMES = new HashMap<>();

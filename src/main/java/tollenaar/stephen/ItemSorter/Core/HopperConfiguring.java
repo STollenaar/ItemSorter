@@ -32,8 +32,11 @@ public class HopperConfiguring {
 
 	public void configureHopper(int frameID, UUID player, Map<String, List<String>> formParams) throws UnsupportedEncodingException {
 		Frame frame = Frame.getFRAME(frameID);
-		Location frameLoc = new Location(Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(), frame.getZ(),
-				frame.getYaw(), frame.getPitch());
+		Location frameLoc = new Location(
+			Bukkit.getWorld(frame.getWorld()), frame.getX(), frame.getY(), frame.getZ(),
+			frame.getYaw(), frame.getPitch()
+		);
+
 		for (Entity ent : frameLoc.getChunk().getEntities()) {
 			// getting the right item frame
 			if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
@@ -63,11 +66,10 @@ public class HopperConfiguring {
 
 				meta.setPages(book.toPages());
 
-				
 				BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-						.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
-								+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(bookValue, "UTF-8")))
-						.create();
+					.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
+						+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(bookValue, "UTF-8")))
+					.create();
 
 				meta.spigot().addPage(editPage);
 
@@ -82,16 +84,15 @@ public class HopperConfiguring {
 	}
 
 	public void editConfigureHopper(UUID player,String bookValue, Map<String, List<String>> formParams) throws ClassNotFoundException, IOException {
-
-		if(Bukkit.getPlayer(player).getInventory().getItemInMainHand() == null || Bukkit.getPlayer(player).getInventory().getItemInMainHand().getType() != Material.WRITTEN_BOOK || 
-				!Bukkit.getPlayer(player).getInventory().getItemInMainHand().getItemMeta().getLore().get(0).replaceAll("§", "").equals(bookValue)){
+		if(Bukkit.getPlayer(player).getInventory().getItemInMainHand() == null || Bukkit.getPlayer(player).getInventory().getItemInMainHand().getType() != Material.WRITTEN_BOOK ||
+			!Bukkit.getPlayer(player).getInventory().getItemInMainHand().getItemMeta().getLore().get(0).replaceAll("§", "").equals(bookValue)){
 			throw new NullPointerException("Not found correct item in hand");
 		}
-		
+
 		// loading the book materials
 		Book book = (Book) Book.fromString(bookValue);
 		book.emptyInputConfig();
-		
+
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
 			if (key.contains("input_")) {
@@ -110,12 +111,12 @@ public class HopperConfiguring {
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
-		
+
 		@SuppressWarnings("deprecation")
 		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-				.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
-						+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(bookValue)))
-				.create();
+			.event(new ClickEvent(ClickEvent.Action.OPEN_URL, plugin.getConfig().getString("URL")
+				+ plugin.getConfig().getString("editPageResponse") + "?configData=" + URLEncoder.encode(bookValue)))
+			.create();
 
 		meta.spigot().addPage(editPage);
 
@@ -130,5 +131,4 @@ public class HopperConfiguring {
 			hidden += ChatColor.COLOR_CHAR + "" + c;
 		return hidden;
 	}
-
 }

@@ -11,7 +11,6 @@ import tollenaar.stephen.ItemSorter.Core.Database;
 import tollenaar.stephen.ItemSorter.Util.Book;
 
 public class HopperHandler implements Listener {
-
 	private Database database;
 
 	public HopperHandler(Database database) {
@@ -21,7 +20,7 @@ public class HopperHandler implements Listener {
 	@EventHandler
 	public void onHopperInputEvent(InventoryMoveItemEvent event) {
 		if (event.getDestination().getType() == InventoryType.HOPPER
-				&& database.hasSavedHopper(event.getDestination().getLocation())) {
+			&& database.hasSavedHopper(event.getDestination().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
 
 			@SuppressWarnings("unchecked")
@@ -35,10 +34,9 @@ public class HopperHandler implements Listener {
 						}
 					}
 				}
-			}else {
+			} else {
 				database.deleteHopper(event.getDestination().getLocation());
 			}
 		}
 	}
-
 }
