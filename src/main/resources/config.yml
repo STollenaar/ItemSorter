@@ -4,3 +4,4 @@ postConfigResponse: 'postHopperConfig'
 initialPageResponse: 'HopperConfig'
 editPageResponse: 'editHopperConfig'
 postEditPageResponse: 'postEditHopperConfig'
+maxInputItems: 100

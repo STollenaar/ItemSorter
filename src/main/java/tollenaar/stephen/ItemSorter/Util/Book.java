@@ -27,7 +27,7 @@ public class Book implements Serializable {
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting
 															// configure
 	private int frameID;
-	
+
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
@@ -60,8 +60,16 @@ public class Book implements Serializable {
 		for (int i = 0; i < inputConfigList.size(); i += 14) {
 			int maxSub = Math.min(inputConfigList.size() - i, 13);
 			String page = inputConfigList.subList(i, i + maxSub).toString().replace("]", "").replace("[", "")
-					.replace(",", "\n");
+					.replace(", ", "\n");
 			pages.add(page);
+		}
+
+		// preventing a book that's too big
+		if (pages.size() >= 15) {
+			String[] lastPage = pages.get(14).split("\n");
+			lastPage[lastPage.length - 1] = "...";
+			pages.set(14, String.join("\n", lastPage));
+			pages = pages.subList(0, 15);
 		}
 
 		return pages;
@@ -112,7 +120,7 @@ public class Book implements Serializable {
 
 		return BOOKS.get(frameID);
 	}
-	
+
 	public static List<Book> getBook(List<Integer> frameIDs) {
 		List<Book> tmp = new ArrayList<>();
 		for (int frameID : frameIDs) {

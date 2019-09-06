@@ -164,21 +164,21 @@ public class Database {
 	public void savePlayer(UUID playerUUID, String bookValue) {
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `bookValue`=?;");
-			pst.setString(1, bookValue);
+			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `userUUID`=?;");
+			pst.setString(1, playerUUID.toString());
 			ResultSet rs = pst.executeQuery();
 
 			if (rs.next()) {
 				pst.close();
 				pst = getConnection()
-						.prepareStatement("UPDATE `EditUserConfigs` SET `userUUID`=? WHERE `bookValue`=?;");
+						.prepareStatement("UPDATE `EditUserConfigs` SET `bookValue`=? WHERE `userUUID`=?;");
 			} else {
 				pst.close();
 				pst = getConnection()
-						.prepareStatement("INSERT INTO `EditUserConfigs` (`userUUID`, `bookValue`) VALUES (?,?);");
+						.prepareStatement("INSERT INTO `EditUserConfigs` (`bookValue`, `userUUID`) VALUES (?,?);");
 			}
-			pst.setString(1, playerUUID.toString());
-			pst.setString(2, bookValue);
+			pst.setString(1, bookValue);
+			pst.setString(2, playerUUID.toString());
 
 			pst.execute();
 
@@ -294,12 +294,12 @@ public class Database {
 		return false;
 	}
 
-	public boolean hasSavedPlayer(String bookValue) {
+	public boolean hasSavedPlayer(String player) {
 		PreparedStatement pst = null;
 		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `bookValue`=?;");
+			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `userUUID`=?;");
 
-			pst.setString(1, bookValue);
+			pst.setString(1, player);
 
 			ResultSet rs = pst.executeQuery();
 			return rs.next();
@@ -757,7 +757,7 @@ public class Database {
 					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
 					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
 					+ "CREATE TABLE IF NOT EXISTS EditUserConfigs "
-					+ "(userUUID TEXT NOT NULL, bookValue TEXT PRIMARY KEY);"
+					+ "(userUUID TEXT NOT NULL, bookValue TEXT NOT NULL);"
 					+ "CREATE TABLE IF NOT EXISTS Version (version TEXT NOT NULL);");
 			statement.close();
 		} catch (SQLException e) {

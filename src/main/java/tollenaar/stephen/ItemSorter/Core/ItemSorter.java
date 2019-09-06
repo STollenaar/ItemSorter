@@ -100,8 +100,8 @@ public class ItemSorter extends JavaPlugin {
 		}
 	}
 
-	private static void addSoftwareLibrary(File file) throws NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException, MalformedURLException {
+	private static void addSoftwareLibrary(File file)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, MalformedURLException {
 		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
 		method.setAccessible(true);
 		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
@@ -118,9 +118,13 @@ public class ItemSorter extends JavaPlugin {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
-		app = Javalin.create(config -> config.addStaticFiles("/web")).start(config.getInt("port"));
+		app = Javalin.create(config -> {
+			config.addStaticFiles("/web");
+			config.showJavalinBanner = false;
+			config.requestCacheSize = 30000L;
+		}).start(config.getInt("port"));
 		appInitalize();
-		
+
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
@@ -129,7 +133,11 @@ public class ItemSorter extends JavaPlugin {
 			try {
 				String userCode = ctx.formParam("userCode");
 				int frameID = Integer.parseInt(ctx.formParam("frameID"));
-				if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+				if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
+					ctx.attribute("response",
+							"To many input options are selected. Please lower the amount. Current amount: "
+									+ ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
+				} else if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
 					ctx.attribute("response", "Thank you. You can close this page now.");
 					database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
@@ -138,7 +146,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -176,14 +184,14 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
 				ctx.render("/web/index.html");
-				if (!database.hasSavedPlayer(bookValue)) {
+				if (!database.hasSavedPlayer(user)) {
 					ctx.attribute("response", "You're not supposed to be here!!");
 					ctx.render("/web/response.html");
 				}
 
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getCause() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -193,7 +201,11 @@ public class ItemSorter extends JavaPlugin {
 			try {
 				String bookValue = ctx.formParam("bookValue");
 				String userCode = ctx.formParam("userCode");
-				if (database.hasSavedPlayer(bookValue)) {
+				if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
+					ctx.attribute("response",
+							"To many input options are selected. Please lower the amount. Current amount: "
+									+ ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
+				} else if (database.hasSavedPlayer(userCode)) {
 					hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
 					ctx.attribute("response", "Thank you. You can close this page now.");
 					database.deleteEditHopper(UUID.fromString(userCode), bookValue);
@@ -202,7 +214,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getMessage() + ")");
+						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -212,7 +224,7 @@ public class ItemSorter extends JavaPlugin {
 			ctx.render("/web/response.html");
 		});
 	}
-	
+
 	public Database getDatabase() {
 		return database;
 	}

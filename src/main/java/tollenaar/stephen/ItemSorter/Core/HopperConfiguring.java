@@ -24,9 +24,11 @@ import tollenaar.stephen.ItemSorter.Util.Frame;
 
 public class HopperConfiguring {
 	private ItemSorter plugin;
+	private Database database;
 
 	public HopperConfiguring(ItemSorter plugin) {
 		this.plugin = plugin;
+		this.database = plugin.getDatabase();
 	}
 
 	public void configureHopper(int frameID, UUID player, Map<String, List<String>> formParams)
@@ -95,15 +97,16 @@ public class HopperConfiguring {
 		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
 
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
+		meta.setTitle("HopperConfiguration");
+		meta.setAuthor(Bukkit.getPlayer(player).getName());
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
 
-		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-				.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
-						plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse")
-								+ "?configData="
-								+ URLEncoder.encode(book.toString(), java.nio.charset.StandardCharsets.UTF_8.toString())))
+		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.").event(new ClickEvent(
+				ClickEvent.Action.OPEN_URL,
+				plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse") + "?configData="
+						+ URLEncoder.encode(book.toString(), java.nio.charset.StandardCharsets.UTF_8.toString())))
 				.create();
 
 		meta.spigot().addPage(editPage);
@@ -111,7 +114,7 @@ public class HopperConfiguring {
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
 		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
-				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && !p.getInventory().getItemInMainHand()
+				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && p.getInventory().getItemInMainHand()
 						.getItemMeta().getLore().get(0).replace("§", "").equals(bookValue)) {
 			p.getInventory().setItemInMainHand(replaceItem);
 		} else if (Frame.getFRAME(book.getFrameID()) != null
@@ -121,7 +124,7 @@ public class HopperConfiguring {
 			throw new NullPointerException("Error trying to find the edited config item");
 		}
 		book.addSelf(book.getFrameID());
-
+		database.deleteEditHopper(player, bookValue);
 	}
 
 	private static String convertToInvisibleString(String s) {

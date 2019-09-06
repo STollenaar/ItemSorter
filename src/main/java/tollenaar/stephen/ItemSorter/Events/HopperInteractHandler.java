@@ -65,7 +65,8 @@ public class HopperInteractHandler implements Listener {
 								b.addSelf(frameID);
 
 							} catch (ClassNotFoundException | IOException e) {
-								// no need for logging, if the item is a written book and has lore, but is not
+								// no need for logging, if the item is a written
+								// book and has lore, but is not
 								// from this plugin it can throw this error.
 							}
 						}
@@ -83,7 +84,8 @@ public class HopperInteractHandler implements Listener {
 						database.savePlayer(event.getPlayer().getUniqueId(), bookValue);
 						event.setCancelled(true);
 					} catch (ClassNotFoundException | IOException e) {
-						// no need for logging, if the item is a written book and has lore, but is not
+						// no need for logging, if the item is a written book
+						// and has lore, but is not
 						// from this plugin it can throw this error.
 					}
 				}
@@ -142,7 +144,8 @@ public class HopperInteractHandler implements Listener {
 				Book book = Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));
 				database.savePlayer(event.getPlayer().getUniqueId(), book.toString());
 			} catch (ClassNotFoundException | IOException e) {
-				// no need for logging, if the item is a written book and has lore, but is not
+				// no need for logging, if the item is a written book and has
+				// lore, but is not
 				// from this plugin it can throw this error.
 			}
 		}
