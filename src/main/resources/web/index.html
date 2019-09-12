@@ -12,19 +12,20 @@
 </head>
 
 <body oncontextmenu="return false; ">
-    <div style="width: auto; margin:auto; text-align: center;display:table; max-width: 70%; ">
+    <div style="margin:auto; text-align: center;display:table;">
 
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
             <button class="tablinks" onclick="openTab(event, 'HopperOutput');loadItems();">Hopper Output</button>
+            <button class="tablinks" onclick="openTab(event, 'HopperAdvanced')">Advanced Settings</button>
         </div>
 
 
         <form method="POST" th:action="${postAction}">
+            <input type="hidden" th:value="${userCode}" name="userCode" />
+            <input type="hidden" th:value="${frameID}" name="frameID" />
+            <input type="hidden" th:value="${bookValue}" name="bookValue" />
             <div id="HopperInput" class="tabcontent">
-                <input type="hidden" th:value="${userCode}" name="userCode" />
-                <input type="hidden" th:value="${frameID}" name="frameID" />
-                <input type="hidden" th:value="${bookValue}" name="bookValue" />
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" class="searchUL">
@@ -37,28 +38,39 @@
                     </li>
                 </ul>
             </div>
-
             <div id="HopperOutput" class="tabcontent">
                 <h2>Configure how the hopper will output the items.</h2>
-                <div id="editor">
-                    <div style=" display: inline-block; width: 720px; height: 480px;  text-align: center; vertical-align:top; margin-top: 15px;">
-                        <ul class="searchUL">
+                <div id="content">
+                    <div style=" display: table-cell;">
+                        <ul class="searchUL" style="overflow-y: auto !important">
                             <li th:each="container : ${containers}" th:object="${container}">
                                 <div id="editorDiv">
                                     <p th:text="${container.name}"></p>
-                                    <canvas th:style="|background-image: url(${container.src}); background-repeat: no-repeat; background-size: contain|"></canvas>
+                                    <canvas th:style="|background-image: url(${container.src}); background-repeat: no-repeat; background-size: 100% 100%|"></canvas>
                                 </div>
                             </li>
                         </ul>
                     </div>
                     <div id="side">
-
                         <div id='items'>
                             <table id='select'>
                                 <tbody></tbody>
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div id="HopperAdvanced" class="tabcontent">
+
+                <div style="cursor: pointer;" th:class="|tooltip ${#lists.contains(checkItems, strict_mode)}? ' active'|" th:onclick="|changeInput(event,'strict_mode')|">
+                    <input type="checkbox" id="Istrict_mode" style="display: none" th:checked="${#lists.contains(checkItems, strict_mode)}" name="strict_mode" value="strict_mode" />
+                    <span th:text="|Strict Mode|"></span>
+                    <span class="tooltiptext">When enabled, will even prevent you from placing items into the hopper.</span>
+                </div>
+                <div style="cursor: pointer;" th:class="|tooltip ${#lists.contains(checkItems, prevent_overflow)}? ' active'|" th:onclick="|changeInput(event,'prevent_overflow')|">
+                    <input type="checkbox" id="Iprevent_overflow" style="display: none" th:checked="${#lists.contains(checkItems, prevent_overflow)}" name="prevent_overflow" value="prevent_overflow" />
+                    <span th:text="|Prevent Overflow|"></span>
+                    <span class="tooltiptext">When enabled, will prevent the hopper from accepting items when the next inventory in the system is full.</span>
                 </div>
             </div>
 

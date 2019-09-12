@@ -1,7 +1,9 @@
 package tollenaar.stephen.ItemSorter.Core;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,6 +18,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -77,7 +81,7 @@ public class ItemSorter extends JavaPlugin {
 			while (entries.hasMoreElements()) {
 				ZipEntry en = entries.nextElement();
 				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
-					containers.add(new Image(en.getName().replace("web/", "")));
+					containers.add(new Image(en.getName().replace("web/", ""),  loadImage(jar.getInputStream(en))));
 				}
 			}
 
@@ -242,5 +246,17 @@ public class ItemSorter extends JavaPlugin {
 
 	public Database getDatabase() {
 		return database;
+	}
+	
+	private  BufferedImage loadImage(InputStream file){
+	    BufferedImage buff = null;
+	    try {
+	        buff = ImageIO.read(file);
+	    } catch (IOException e) {
+	    	Bukkit.getLogger().log(Level.SEVERE, e.toString());
+	        return null;
+	    }
+	    return buff;
+
 	}
 }

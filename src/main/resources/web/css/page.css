@@ -12,6 +12,10 @@ h2 {
     color: white;
 }
 
+h3 {
+    color: white;
+}
+
 .submitButton {
     width: 100%;
     background-image: url("../images/sign.png");
@@ -21,24 +25,38 @@ h2 {
     font-family: "minecraftfont";
 }
 
-#editor {
+#content {
     text-align: center;
     vertical-align: middle;
-    display: table-cell;
+    display: table-row;
 }
 
 #side {
-    display: inline-block;
+    display: table-cell;
     vertical-align: top;
     margin-top: 15px;
-    height: auto;
-    width: auto;
     border-collapse: collapse;
 }
 
 #items {
     display: inline-block;
     overflow-y: scroll;
-    height: 152px;
+    height: auto;
     margin-top: 10px;
+    max-height: 60vh;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-image: url("../images/sign.png");
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

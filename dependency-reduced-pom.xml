@@ -47,7 +47,7 @@
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <outputFile>${output}\${project.name}.jar</outputFile>
-              <outputDirectory>${output}\Dropbox\MinecraftServer\plugins</outputDirectory>
+              <outputDirectory>${output}</outputDirectory>
             </configuration>
           </execution>
         </executions>
