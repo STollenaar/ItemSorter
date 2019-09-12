@@ -20,3 +20,25 @@ h2 {
     font-size: 25px;
     font-family: "minecraftfont";
 }
+
+#editor {
+    text-align: center;
+    vertical-align: middle;
+    display: table-cell;
+}
+
+#side {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 15px;
+    height: auto;
+    width: auto;
+    border-collapse: collapse;
+}
+
+#items {
+    display: inline-block;
+    overflow-y: scroll;
+    height: 152px;
+    margin-top: 10px;
+}

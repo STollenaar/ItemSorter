@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 import tollenaar.stephen.ItemSorter.Util.Book;
+import tollenaar.stephen.ItemSorter.Util.Image;
 import tollenaar.stephen.ItemSorter.Util.Item;
 
 public class ItemSorter extends JavaPlugin {
@@ -38,6 +40,7 @@ public class ItemSorter extends JavaPlugin {
 	private FileConfiguration config;
 	private static Javalin app;
 	private static List<Item> minecraftItems;
+	private static List<Image> containers = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -68,6 +71,16 @@ public class ItemSorter extends JavaPlugin {
 			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
 			minecraftItems = gson.fromJson(reader, ITEM_TYPE);
 			reader.close();
+
+			Enumeration<? extends ZipEntry> entries = jar.entries();
+
+			while (entries.hasMoreElements()) {
+				ZipEntry en = entries.nextElement();
+				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
+					containers.add(new Image(en.getName().replace("web/", "")));
+				}
+			}
+
 			jar.close();
 		} catch (IOException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
@@ -157,6 +170,7 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
+				ctx.attribute("containers", containers);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", new ArrayList<String>());
@@ -180,6 +194,7 @@ public class ItemSorter extends JavaPlugin {
 				String user = database.getSavedPlayer(bookValue);
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
+				ctx.attribute("containers", containers);
 				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);

@@ -672,7 +672,7 @@ public class Database {
 			ResultSet rs = pst.executeQuery();
 			if (!rs.next()) {
 				plugin.getLogger().log(Level.WARNING,
-						"Newly created table, adding values and reloading the loaded configurations. This can tkae a while!!");
+						"Newly created table, adding values and reloading the loaded configurations. This can take a while!!");
 				pst.close();
 				pst = getConnection().prepareStatement("INSERT INTO `Version` (`version`) VALUES (1.0);");
 				pst.execute();
@@ -702,6 +702,7 @@ public class Database {
 
 								// changing the item frame item
 								item.setItemMeta(meta);
+								fr.setItem(item);
 							}
 						}
 					}
