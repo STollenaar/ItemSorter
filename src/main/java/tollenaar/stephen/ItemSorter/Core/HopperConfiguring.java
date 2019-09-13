@@ -48,6 +48,12 @@ public class HopperConfiguring {
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
 			}
+			if (key.contains("strict_mode")) {
+				book.setStrictMode(true);
+			}
+			if (key.contains("prevent_overflow")) {
+				book.setPreventOverflow(true);
+			}
 		}
 		// serializing the book and saving as lore
 		String bookValue = book.toString();
@@ -87,6 +93,16 @@ public class HopperConfiguring {
 			String value = formParams.get(key).get(0);
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
+			}
+			if (key.contains("strict_mode")) {
+				book.setStrictMode(true);
+			} else {
+				book.setStrictMode(false);
+			}
+			if (key.contains("prevent_overflow")) {
+				book.setPreventOverflow(true);
+			} else {
+				book.setPreventOverflow(false);
 			}
 		}
 		// serializing the book and saving as lore

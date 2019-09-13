@@ -17,6 +17,9 @@
      padding: 14px 16px;
      transition: 0.3s;
      font-family: "minecraftfont";
+     border: 1px solid white;
+     border-top: none;
+     border-bottom: none;
      font-size: 20px;
  }
  /* Change background color of buttons on hover */
