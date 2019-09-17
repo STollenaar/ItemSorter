@@ -3,7 +3,7 @@
  .tab {
      overflow: hidden;
      border: 1px solid #ccc;
-     background-color: #f1f1f1;
+     display: table-caption
  }
  /* Style the buttons that are used to open the tab content */
  
@@ -17,6 +17,9 @@
      padding: 14px 16px;
      transition: 0.3s;
      font-family: "minecraftfont";
+     border: 1px solid white;
+     border-top: none;
+     border-bottom: none;
      font-size: 20px;
  }
  /* Change background color of buttons on hover */
@@ -36,6 +39,8 @@
      padding: 6px 12px;
      border: 1px solid #ccc;
      border-top: none;
+     width: 70vw;
+     height: 70vh;
  }
  
  .tabcontent {

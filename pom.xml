@@ -53,8 +53,8 @@
 						</goals>
 						<configuration>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<outputFile>${user.home}\Dropbox\MinecraftServer\plugins\${project.name}.jar</outputFile>
-							<outputDirectory>${user.home}\Dropbox\MinecraftServer\plugins</outputDirectory>
+							<outputFile>${output}\${project.name}.jar</outputFile>
+							<outputDirectory>${output}</outputDirectory>
 						</configuration>
 
 					</execution>
@@ -122,7 +122,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot</artifactId>
+			<artifactId>spigot-api</artifactId>
 			<version>1.14.4-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>

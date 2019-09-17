@@ -17,16 +17,24 @@ import java.util.logging.Level;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
+import org.bukkit.block.data.type.Hopper;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 4519138450923555946L;
 	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
-	private List<Material> inputConfig = new ArrayList<>(); // input sorting
-															// configure
+
+	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
 	private int frameID;
+	private boolean strictMode;
+	private boolean preventOverflow;
 
 	public Book(int frameID) {
 		this.frameID = frameID;
@@ -54,6 +62,8 @@ public class Book implements Serializable {
 		for (Material material : this.inputConfig) {
 			tmp.add(getDisplayName(material));
 		}
+		pageBuilder.set("StrictMode", isStrictMode());
+		pageBuilder.set("PreventOverflow", isPreventOverflow());
 		pageBuilder.set(path, tmp);
 
 		List<String> inputConfigList = new ArrayList<>(Arrays.asList(pageBuilder.saveToString().split("\n")));
@@ -75,6 +85,33 @@ public class Book implements Serializable {
 		return pages;
 	}
 
+	public boolean allowItem(Inventory inventory, ItemStack item) {
+		// filtering the items
+		if (!hasInputConfig(item.getType())) {
+			return false;
+		}
+		// prevents accepting an item if the next container in the system is full
+		if (isPreventOverflow()) {
+			Block hopper = inventory.getLocation().getBlock();
+			BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
+			Block target = hopper.getRelative(facing);
+			if (target instanceof Container) {
+				Container t = (Container) target;
+				if (!hasRoom(t.getInventory(), item)) {
+					return false;
+				}
+			}else {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean hasRoom(Inventory inventory, ItemStack item) {
+		return Arrays.stream(inventory.getStorageContents())
+				.anyMatch(itemStack -> itemStack == null || item.getAmount() < itemStack.getMaxStackSize());
+	}
+
 	private String getDisplayName(Material material) {
 		return WordUtils.capitalizeFully(material.name().toLowerCase().replace("_", " "));
 	}
@@ -91,6 +128,12 @@ public class Book implements Serializable {
 		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {
 			items.add(getDisplayName(material));
+		}
+		if(isPreventOverflow()) {
+			items.add("prevent_overflow");
+		}
+		if(isStrictMode()) {
+			items.add("strict_mode");
 		}
 		return items;
 	}
@@ -111,6 +154,22 @@ public class Book implements Serializable {
 
 	public int getFrameID() {
 		return frameID;
+	}
+
+	public boolean isStrictMode() {
+		return strictMode;
+	}
+
+	public void setStrictMode(boolean strictMode) {
+		this.strictMode = strictMode;
+	}
+
+	public boolean isPreventOverflow() {
+		return preventOverflow;
+	}
+
+	public void setPreventOverflow(boolean preventOverflow) {
+		this.preventOverflow = preventOverflow;
 	}
 
 	public static Book getBook(int frameID) {

@@ -3,12 +3,18 @@
     src: url("../fonts/minecraftfont.eot") format("eot"), url("../fonts/minecraftfont.woff") format("woff"), url("../fonts/minecraftfont.ttf") format("truetype");
 }
 
+@import url("./options.css");
+@import url("./tabs.css");
 body {
     font-family: "minecraftfont";
     background-image: url("../images/background.png");
 }
 
 h2 {
+    color: white;
+}
+
+h3 {
     color: white;
 }
 
@@ -19,4 +25,40 @@ h2 {
     padding: 14px 16px;
     font-size: 25px;
     font-family: "minecraftfont";
+}
+
+#content {
+    text-align: center;
+    vertical-align: middle;
+    display: table-row;
+}
+
+#side {
+    display: table-cell;
+    vertical-align: top;
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+#items {
+    display: inline-block;
+    overflow-y: scroll;
+    height: auto;
+    margin-top: 10px;
+    max-height: 60vh;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-image: url("../images/hover_sign.png");
+    text-align: center;
+    padding: 5px 0;
+    max-width: 15vw;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

@@ -2,57 +2,98 @@
 
 <head>
     <title>Hopper Configuration</title>
-    <link rel="stylesheet" type="text/css" href="./css/tabs.css" />
     <link rel="stylesheet" type="text/css" href="./css/page.css" />
-    <link rel="stylesheet" type="text/css" href="./css/options.css" />
     <script src="./js/tabs.js"></script>
     <script src="./js/srcFix.js"></script>
     <script src="./js/search.js"></script>
+    <script src="./js/outputSelector.js"></script>
 </head>
 
-<body>
-    <div style="width: 50%; margin:auto; text-align: center">
+<body oncontextmenu="return false; ">
+    <div style="margin:auto; text-align: center;display:table;">
 
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
-            <button class="tablinks" onclick="openTab(event, 'HopperOutput')">Hopper Output</button>
+           <!--- <button class="tablinks" onclick="openTab(event, 'HopperOutput');loadItems();">Hopper Output</button> --->
+            <button class="tablinks" onclick="openTab(event, 'HopperAdvanced')">Advanced Settings</button>
         </div>
 
 
         <form method="POST" th:action="${postAction}">
+            <input type="hidden" th:value="${userCode}" name="userCode" />
+            <input type="hidden" th:value="${frameID}" name="frameID" />
+            <input type="hidden" th:value="${bookValue}" name="bookValue" />
+
             <div id="HopperInput" class="tabcontent">
-                <input type="hidden" th:value="${userCode}" name="userCode" />
-                <input type="hidden" th:value="${frameID}" name="frameID" />
-                <input type="hidden" th:value="${bookValue}" name="bookValue" />
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
-                <ul id="searchUL" class="searchUL" style="height: 70%; overflow-y: scroll">
+                <ul id="searchUL" class="searchUL">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
                         <div style="cursor: pointer;" th:class="${#lists.contains(checkItems, item.displayName)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
                             <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:checked="${#lists.contains(checkItems, item.displayName)}" th:name="|input_${item.name}|" th:value="${item.name}" />
-                            <img th:src="|images/block/${item.name}.png|">
+                            <img th:id="|IM${item.name}|" th:src="|images/block/${item.name}.png|">
                             <span th:text="${item.displayName}"></span>
                         </div>
                     </li>
                 </ul>
             </div>
 
-            <div id="HopperOutput" class="tabcontent">
+          <!---  <div id="HopperOutput" class="tabcontent">
                 <h2>Configure how the hopper will output the items.</h2>
+                <div id="content">
+                    <div style=" display: table-cell;">
+                        <ul class="searchUL" style="overflow-y: auto !important">
+                            <li th:each="container : ${containers}" th:object="${container}">
+                                <div id="editorDiv">
+                                    <p th:text="${container.name}"></p>
+                                    <canvas th:style="|background-image: url(${container.src}); background-repeat: no-repeat; background-size: 100% 100%|"></canvas>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="side">
+                        <div id='items'>
+                            <table id='select'>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> --->
+
+            <div id="HopperAdvanced" class="tabcontent">
+                <ul class="searchUL">
+                    <li>
+                        <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'strict_mode')}? 'active'" th:onclick="|changeInput(event,'strict_mode')|">
+                            <input type="checkbox" id="Istrict_mode" style="display: none" th:checked="${#lists.contains(checkItems, 'strict_mode')}" name="strict_mode" value="strict_mode" />
+                            <span th:text="|Strict Mode|"></span>
+                            <span class="tooltiptext">When enabled, will even prevent the hopper pickup items that don't belong in it, instead of just relying on container to container action.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'prevent_overflow')}? 'active'" th:onclick="|changeInput(event,'prevent_overflow')|">
+                            <input type="checkbox" id="Iprevent_overflow" style="display: none" th:checked="${#lists.contains(checkItems, 'prevent_overflow')}" name="prevent_overflow" value="prevent_overflow" />
+                            <span th:text="|Prevent Overflow|"></span>
+                            <span class="tooltiptext">When enabled, will prevent the hopper from accepting items when the next inventory in the system is full.</span>
+                        </div>
+                    </li>
+                </ul>
             </div>
 
-            <button class="submitButton">Submit Config</button>
+            <button class="submitButton ">Submit Config</button>
         </form>
     </div>
 
-    <script type="text/javascript" th:inline="javascript">
+    <script type="text/javascript ">
         function changeInput(evt, id) {
             if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
                 document.getElementById('I' + id).setAttribute('checked', 'true');
-                evt.currentTarget.className += " active";
+                evt.currentTarget.className += " active ";
+                sprites.push(id);
             } else {
                 document.getElementById('I' + id).removeAttribute('checked');
-                evt.currentTarget.className = evt.currentTarget.className.replace('active', "");
+                evt.currentTarget.className = evt.currentTarget.className.replace('active', " ");
+                sprites = sprites.filter(e => e !== id);
             }
             document
         }
