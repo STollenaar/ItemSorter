@@ -35,6 +35,8 @@ public class HopperHandler implements Listener {
 						// checking the configuration
 						if (!book.allowItem(event.getDestination(), event.getItem())) {
 							event.setCancelled(true);
+						}else {
+							event.setCancelled(false);
 							return;
 						}
 					}

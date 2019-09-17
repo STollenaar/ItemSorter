@@ -3,6 +3,8 @@
     src: url("../fonts/minecraftfont.eot") format("eot"), url("../fonts/minecraftfont.woff") format("woff"), url("../fonts/minecraftfont.ttf") format("truetype");
 }
 
+@import url("./options.css");
+@import url("./tabs.css");
 body {
     font-family: "minecraftfont";
     background-image: url("../images/background.png");
