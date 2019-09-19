@@ -31,6 +31,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import io.javalin.Javalin;
+import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 import tollenaar.stephen.ItemSorter.Util.Book;
@@ -60,6 +61,8 @@ public class ItemSorter extends JavaPlugin {
 		pm.registerEvents(new HopperInteractHandler(this), this);
 		pm.registerEvents(new HopperHandler(database), this);
 
+		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
+		
 		try {
 			// getting all the items in minecraft and processing them into a
 			// java object

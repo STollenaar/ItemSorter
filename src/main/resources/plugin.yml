@@ -4,3 +4,7 @@ version: 0.01
 authors: [guitargun]
 description: able to sort items in a better way using hoppers
 api-version: 1.14
+commands: 
+     ItemSorter:
+             description: various commands exists with this plugin
+             usage: /<command>
