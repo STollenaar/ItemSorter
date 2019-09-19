@@ -88,7 +88,6 @@ public class HopperConfiguring {
 		Player p = Bukkit.getPlayer(player);
 		Book book = Book.fromString(bookValue);
 		book.emptyInputConfig();
-
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
@@ -103,6 +102,9 @@ public class HopperConfiguring {
 				book.setPreventOverflow(true);
 			} else {
 				book.setPreventOverflow(false);
+			}
+			if(key.contains("junction_ratio")) {
+				
 			}
 		}
 		// serializing the book and saving as lore

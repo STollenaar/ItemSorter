@@ -35,7 +35,8 @@ public class Book implements Serializable {
 	private int frameID;
 	private boolean strictMode;
 	private boolean preventOverflow;
-
+	
+	
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
@@ -100,11 +101,19 @@ public class Book implements Serializable {
 				if (!hasRoom(t.getInventory(), item)) {
 					return false;
 				}
-			}else {
+			} else {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private boolean isJunction(Block hopper) {
+		BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
+		if(facing != BlockFace.DOWN) {
+				return hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER || hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER_MINECART;
+		}
+		return false;
 	}
 
 	private boolean hasRoom(Inventory inventory, ItemStack item) {
@@ -129,10 +138,10 @@ public class Book implements Serializable {
 		for (Material material : this.inputConfig) {
 			items.add(getDisplayName(material));
 		}
-		if(isPreventOverflow()) {
+		if (isPreventOverflow()) {
 			items.add("prevent_overflow");
 		}
-		if(isStrictMode()) {
+		if (isStrictMode()) {
 			items.add("strict_mode");
 		}
 		return items;
