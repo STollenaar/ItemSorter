@@ -32,7 +32,7 @@ public class Database {
 
 	private ItemSorter plugin;
 	private Connection connection;
-	private static final String VERSION = "1.1";
+	private static final String VERSION = "1.2";
 
 	public Database(ItemSorter plugin) {
 		this.plugin = plugin;
@@ -521,96 +521,78 @@ public class Database {
 	public void deleteFrame(Location frameLocation) {
 		Frame.removeFRAME(frameLocation);
 
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("DELETE FROM `Frames` WHERE "
+					+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
 
-			@Override
-			public void run() {
-				PreparedStatement pst = null;
-				try {
-					pst = getConnection().prepareStatement("DELETE FROM `Frames` WHERE "
-							+ "`frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? AND `framePitch`=?;");
+			pst.setDouble(1, frameLocation.getX());
+			pst.setDouble(2, frameLocation.getY());
+			pst.setDouble(3, frameLocation.getZ());
+			pst.setString(4, frameLocation.getWorld().getName());
+			pst.setFloat(5, frameLocation.getYaw());
+			pst.setFloat(6, frameLocation.getPitch());
+			pst.execute();
 
-					pst.setDouble(1, frameLocation.getX());
-					pst.setDouble(2, frameLocation.getY());
-					pst.setDouble(3, frameLocation.getZ());
-					pst.setString(4, frameLocation.getWorld().getName());
-					pst.setFloat(5, frameLocation.getYaw());
-					pst.setFloat(6, frameLocation.getPitch());
-					pst.execute();
-
-				} catch (SQLException e) {
-					Bukkit.getLogger().log(Level.SEVERE, e.toString());
-				} finally {
-					try {
-						if (pst != null) {
-							pst.close();
-						}
-					} catch (SQLException e) {
-						Bukkit.getLogger().log(Level.SEVERE, e.toString());
-					}
-
+		} catch (SQLException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
 				}
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
-		});
+
+		}
 
 	}
 
 	public void deletePlayerWithFrame(UUID player, int frameID) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection()
+					.prepareStatement("DELETE FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
 
-			@Override
-			public void run() {
-				PreparedStatement pst = null;
-				try {
-					pst = getConnection()
-							.prepareStatement("DELETE FROM `UserConfigs` WHERE " + "`userUUID`=? AND `frame_id`=?;");
+			pst.setString(1, player.toString());
+			pst.setInt(2, frameID);
+			pst.execute();
 
-					pst.setString(1, player.toString());
-					pst.setInt(2, frameID);
-					pst.execute();
-
-				} catch (SQLException e) {
-					Bukkit.getLogger().log(Level.SEVERE, e.toString());
-				} finally {
-					try {
-						if (pst != null) {
-							pst.close();
-						}
-					} catch (SQLException e) {
-						Bukkit.getLogger().log(Level.SEVERE, e.toString());
-					}
+		} catch (SQLException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
 				}
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
-		});
+		}
 	}
 
 	public void deleteEditHopper(UUID player, String bookValue) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection()
+					.prepareStatement("DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
 
-			@Override
-			public void run() {
-				PreparedStatement pst = null;
-				try {
-					pst = getConnection().prepareStatement(
-							"DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
+			pst.setString(1, player.toString());
+			pst.setString(2, bookValue);
+			pst.execute();
 
-					pst.setString(1, player.toString());
-					pst.setString(2, bookValue);
-					pst.execute();
-
-				} catch (SQLException e) {
-					Bukkit.getLogger().log(Level.SEVERE, e.toString());
-				} finally {
-					try {
-						if (pst != null) {
-							pst.close();
-						}
-					} catch (SQLException e) {
-						Bukkit.getLogger().log(Level.SEVERE, e.toString());
-					}
+		} catch (SQLException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
 				}
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
-		});
+		}
 	}
 
 	public void loadHoppers() {
@@ -706,7 +688,26 @@ public class Database {
 							}
 						}
 					}
+				} else if (rs.getString("version").equals("1.1")) {
+					plugin.getLogger().log(Level.WARNING,
+							"Old non supported version detected, updating current editing configs. This can take a while!");
+					PreparedStatement ps = null;
+					try {
+						ps = getConnection().prepareStatement("DELETE FROM EditUserConfigs;");
+						ps.execute();
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
+					} finally {
+						try {
+							if (ps != null) {
+								ps.close();
+							}
+						} catch (SQLException e) {
+							Bukkit.getLogger().log(Level.SEVERE, e.toString());
+						}
+					}
 				}
+
 				if (!rs.getString("version").equals(VERSION)) {
 					plugin.getLogger().log(Level.WARNING, "Updating Version.");
 					String old = rs.getString("version");
