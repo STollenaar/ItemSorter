@@ -166,7 +166,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
+						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -206,14 +206,14 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
 				ctx.render("/web/index.html");
-				if (!database.hasSavedPlayer(user)) {
+				if (!database.hasSavedPlayer(UUID.fromString(user))) {
 					ctx.attribute("response", "You're not supposed to be here!!");
 					ctx.render("/web/response.html");
 				}
 
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
+						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -227,16 +227,16 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response",
 							"To many input options are selected. Please lower the amount. Current amount: "
 									+ ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
-				} else if (database.hasSavedPlayer(userCode)) {
+				} else if (database.hasSavedPlayer(UUID.fromString(userCode))) {
 					hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
 					ctx.attribute("response", "Thank you. You can close this page now.");
-					database.deleteEditHopper(UUID.fromString(userCode), bookValue);
+					database.deleteEditHopper(UUID.fromString(userCode));
 				} else {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
 				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.getStackTrace() + ")");
+						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});

@@ -14,7 +14,6 @@
 
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
-            <!-- <button class="tablinks" onclick="openTab(event, 'HopperOutput');loadItems();">Hopper Output</button> -->
             <button class="tablinks" onclick="openTab(event, 'HopperAdvanced')">Advanced Settings</button>
         </div>
 
@@ -38,29 +37,6 @@
                 </ul>
             </div>
 
-            <!--  <div id="HopperOutput" class="tabcontent">
-                <h2>Configure how the hopper will output the items.</h2>
-                <div id="content">
-                    <div style=" display: table-cell;">
-                        <ul class="searchUL" style="overflow-y: auto !important">
-                            <li th:each="container : ${containers}" th:object="${container}">
-                                <div id="editorDiv">
-                                    <p th:text="${container.name}"></p>
-                                    <canvas th:style="|background-image: url(${container.src}); background-repeat: no-repeat; background-size: 100% 100%|"></canvas>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="side">
-                        <div id='items'>
-                            <table id='select'>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
             <div id="HopperAdvanced" class="tabcontent">
                 <ul class="searchUL">
                     <li>
@@ -81,10 +57,12 @@
                         <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'" th:onclick="|changeInput(event,'junction_ratio')|">
                             <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${#lists.contains(checkItems, 'junction_ratio')}" name="junction_ratio" value="junction_ratio" />
                             <span th:text="|Junction Ratio|"></span>
-                            <input type="number" name="firstRatio" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png"); font-size: 18px; font-family: minecraftfont; border: none;' />
-                            <span th:text="| To |"></span>
-                            <input type="number" name="secondRatio" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png"); font-size: 18px; font-family: minecraftfont; border: none;' />
-                            <span class="tooltiptext">When enabled, will try and follow the ratio set for item moving.</span>
+                            <input type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png "); font-size: 18px; font-family: minecraftfont; border: none;'
+                            />
+                            <span th:text="| To | "></span>
+                            <input type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png "); font-size: 18px; font-family: minecraftfont; border: none;'
+                            />
+                            <span class="tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
                         </div>
                     </li>
                 </ul>

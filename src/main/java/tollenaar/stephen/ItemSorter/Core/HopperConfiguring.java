@@ -48,13 +48,24 @@ public class HopperConfiguring {
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
 			}
-			if (key.contains("strict_mode")) {
-				book.setStrictMode(true);
-			}
-			if (key.contains("prevent_overflow")) {
-				book.setPreventOverflow(true);
-			}
 		}
+		if (formParams.keySet().contains("strict_mode")) {
+			book.setStrictMode(true);
+		} else {
+			book.setStrictMode(false);
+		}
+		if (formParams.keySet().contains("prevent_overflow")) {
+			book.setPreventOverflow(true);
+		} else {
+			book.setPreventOverflow(false);
+		}
+		if (formParams.keySet().contains("junction_ratio")) {
+			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
+					Integer.parseInt(formParams.get("secondRatio").get(0)));
+		} else {
+			book.emptyRatio();
+		}
+
 		// serializing the book and saving as lore
 		String bookValue = book.toString();
 		List<String> loreList = new ArrayList<>();
@@ -82,8 +93,8 @@ public class HopperConfiguring {
 	}
 
 	public void editConfigureHopper(UUID player, String bookValue, Map<String, List<String>> formParams)
-			throws ClassNotFoundException, IOException, NullPointerException {
-
+			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException {
+		System.out.println(formParams);
 		// loading the book materials
 		Player p = Bukkit.getPlayer(player);
 		Book book = Book.fromString(bookValue);
@@ -93,20 +104,24 @@ public class HopperConfiguring {
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
 			}
-			if (key.contains("strict_mode")) {
-				book.setStrictMode(true);
-			} else {
-				book.setStrictMode(false);
-			}
-			if (key.contains("prevent_overflow")) {
-				book.setPreventOverflow(true);
-			} else {
-				book.setPreventOverflow(false);
-			}
-			if(key.contains("junction_ratio")) {
-				
-			}
 		}
+		if (formParams.keySet().contains("strict_mode")) {
+			book.setStrictMode(true);
+		} else {
+			book.setStrictMode(false);
+		}
+		if (formParams.keySet().contains("prevent_overflow")) {
+			book.setPreventOverflow(true);
+		} else {
+			book.setPreventOverflow(false);
+		}
+		if (formParams.keySet().contains("junction_ratio")) {
+			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
+					Integer.parseInt(formParams.get("secondRatio").get(0)));
+		} else {
+			book.emptyRatio();
+		}
+
 		// serializing the book and saving as lore
 		String bookValueNew = book.toString();
 		List<String> loreList = new ArrayList<>();
@@ -142,7 +157,7 @@ public class HopperConfiguring {
 			throw new NullPointerException("Error trying to find the edited config item");
 		}
 		book.addSelf(book.getFrameID());
-		database.deleteEditHopper(player, bookValue);
+		database.deleteEditHopper(player);
 	}
 
 	private static String convertToInvisibleString(String s) {

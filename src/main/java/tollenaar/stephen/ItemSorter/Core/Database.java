@@ -21,6 +21,9 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -32,7 +35,8 @@ public class Database {
 
 	private ItemSorter plugin;
 	private Connection connection;
-	private static final String VERSION = "1.2";
+	private static final String VERSION = "1.3";
+	private static BiMap<UUID, String> editConfigs = HashBiMap.create();
 
 	public Database(ItemSorter plugin) {
 		this.plugin = plugin;
@@ -162,37 +166,7 @@ public class Database {
 	}
 
 	public void savePlayer(UUID playerUUID, String bookValue) {
-		PreparedStatement pst = null;
-		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `userUUID`=?;");
-			pst.setString(1, playerUUID.toString());
-			ResultSet rs = pst.executeQuery();
-
-			if (rs.next()) {
-				pst.close();
-				pst = getConnection()
-						.prepareStatement("UPDATE `EditUserConfigs` SET `bookValue`=? WHERE `userUUID`=?;");
-			} else {
-				pst.close();
-				pst = getConnection()
-						.prepareStatement("INSERT INTO `EditUserConfigs` (`bookValue`, `userUUID`) VALUES (?,?);");
-			}
-			pst.setString(1, bookValue);
-			pst.setString(2, playerUUID.toString());
-
-			pst.execute();
-
-		} catch (SQLException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			}
-		}
+		editConfigs.forcePut(playerUUID, bookValue);
 	}
 
 	public boolean hasSavedHopper(Location hopper) {
@@ -294,28 +268,8 @@ public class Database {
 		return false;
 	}
 
-	public boolean hasSavedPlayer(String player) {
-		PreparedStatement pst = null;
-		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE `userUUID`=?;");
-
-			pst.setString(1, player);
-
-			ResultSet rs = pst.executeQuery();
-			return rs.next();
-
-		} catch (SQLException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			}
-		}
-		return false;
+	public boolean hasSavedPlayer(UUID player) {
+		return editConfigs.containsKey(player);
 	}
 
 	public Object getSavedHopperByLocation(Location hopper, String field) {
@@ -460,29 +414,10 @@ public class Database {
 	}
 
 	public String getSavedPlayer(String bookValue) {
-		PreparedStatement pst = null;
-		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `EditUserConfigs` WHERE " + "`bookValue`=?;");
-
-			pst.setString(1, bookValue);
-
-			ResultSet rs = pst.executeQuery();
-			if (rs.next()) {
-				return rs.getString("userUUID");
-			}
-
-		} catch (SQLException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			}
+		if (!editConfigs.containsValue(bookValue)) {
+			return null;
 		}
-		return null;
+		return editConfigs.inverse().get(bookValue).toString();
 	}
 
 	public void deleteHopper(Location hopperLocation) {
@@ -572,27 +507,8 @@ public class Database {
 		}
 	}
 
-	public void deleteEditHopper(UUID player, String bookValue) {
-		PreparedStatement pst = null;
-		try {
-			pst = getConnection()
-					.prepareStatement("DELETE FROM `EditUserConfigs` WHERE " + "`userUUID`=? AND `bookValue`=?;");
-
-			pst.setString(1, player.toString());
-			pst.setString(2, bookValue);
-			pst.execute();
-
-		} catch (SQLException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			}
-		}
+	public void deleteEditHopper(UUID player) {
+		editConfigs.remove(player);
 	}
 
 	public void loadHoppers() {
@@ -706,6 +622,24 @@ public class Database {
 							Bukkit.getLogger().log(Level.SEVERE, e.toString());
 						}
 					}
+				} else if (rs.getString("version").contentEquals("1.2")) {
+					plugin.getLogger().log(Level.WARNING,
+							"Old non supported version detected, removing current editing configs. This can take a while!");
+					PreparedStatement ps = null;
+					try {
+						ps = getConnection().prepareStatement("DROP TABLE EditUserConfigs;");
+						ps.execute();
+					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
+					} finally {
+						try {
+							if (ps != null) {
+								ps.close();
+							}
+						} catch (SQLException e) {
+							Bukkit.getLogger().log(Level.SEVERE, e.toString());
+						}
+					}
 				}
 
 				if (!rs.getString("version").equals(VERSION)) {
@@ -757,10 +691,7 @@ public class Database {
 					+ " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
 					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
 					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
-					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS EditUserConfigs "
-					+ "(userUUID TEXT NOT NULL, bookValue TEXT NOT NULL);"
-					+ "CREATE TABLE IF NOT EXISTS Version (version TEXT NOT NULL);");
+					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
 			statement.close();
 		} catch (SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getMessage());
