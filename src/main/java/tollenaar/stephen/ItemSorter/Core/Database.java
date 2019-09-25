@@ -68,6 +68,8 @@ public class Database {
 				pst.setString(4, hopperLocation.getWorld().getName());
 				pst.execute();
 
+			}
+			if (Frame.getFRAME(frameLocation) == null) {
 				saveFrames(hopperLocation, frameLocation);
 			}
 		} catch (SQLException e) {
@@ -127,6 +129,21 @@ public class Database {
 			pst.setFloat(6, frameLocation.getYaw());
 			pst.setFloat(7, frameLocation.getPitch());
 			pst.execute();
+
+			pst.close();
+			pst = getConnection().prepareStatement(
+					"SELECT * FROM `Frames` WHERE `hopper_id`=? AND `frameX`=? AND `frameY`=? AND `frameZ`=? AND `frameWorld`=? AND `frameYaw`=? ANd `framePitch`=?;");
+
+			pst.setInt(1, hopperID);
+			pst.setDouble(2, frameLocation.getX());
+			pst.setDouble(3, frameLocation.getY());
+			pst.setDouble(4, frameLocation.getZ());
+			pst.setString(5, frameLocation.getWorld().getName());
+			pst.setFloat(6, frameLocation.getYaw());
+			pst.setFloat(7, frameLocation.getPitch());
+			ResultSet rs = pst.executeQuery();
+			rs.next();
+			new Frame(rs);
 
 		} catch (SQLException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
@@ -537,7 +554,7 @@ public class Database {
 			while (rs.next()) {
 				Frame frame = new Frame(rs);
 				ItemFrame fr = frame.getEntityFrame();
-				if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK
+				if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK
 						&& fr.getItem().getItemMeta().hasLore()) {
 					Book book = Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replace("§", ""));
 					book.addSelf(frame.getId());

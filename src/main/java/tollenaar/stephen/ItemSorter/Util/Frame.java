@@ -27,6 +27,7 @@ public class Frame {
 		this(rs.getInt("id"), rs.getInt("hopper_id"), rs.getDouble("frameX"), rs.getDouble("frameY"),
 				rs.getDouble("frameZ"), rs.getFloat("frameYaw"), rs.getFloat("framePitch"), rs.getString("frameWorld"));
 	}
+	
 
 	public Frame(int id, int hopperID, double x, double y, double z, float yaw, float pitch, String world) {
 		this.id = id;

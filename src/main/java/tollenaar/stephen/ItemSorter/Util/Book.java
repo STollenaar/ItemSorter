@@ -40,6 +40,8 @@ public class Book implements Serializable {
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
+		
+		
 	}
 
 	public void addSelf(int frameID) {
@@ -112,15 +114,6 @@ public class Book implements Serializable {
 			}
 		}
 		return true;
-	}
-
-	public boolean isJunction(Block hopper) {
-		BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
-		if (facing != BlockFace.DOWN) {
-			return hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER
-					|| hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER_MINECART;
-		}
-		return false;
 	}
 
 	private boolean hasRoom(Inventory inventory, ItemStack item) {

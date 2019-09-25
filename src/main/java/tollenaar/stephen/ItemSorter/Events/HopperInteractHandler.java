@@ -34,11 +34,13 @@ public class HopperInteractHandler implements Listener {
 	// handling configuring of the frames
 	@EventHandler
 	public void onHopperInteractEvent(PlayerInteractEntityEvent event) {
+		System.out.println(event.getRightClicked().getLocation());
 		if (event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
-
+			
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
+			System.out.println(frameID);
 			if (frame.getItem().getType() == Material.AIR) {
 				// getting to configure
 				if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
@@ -135,7 +137,7 @@ public class HopperInteractHandler implements Listener {
 
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
-		if (event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK
+		if (event.getItem().getType() == Material.WRITTEN_BOOK
 				&& event.getItem().getItemMeta().hasLore()) {
 			try {
 				Book book = Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));
