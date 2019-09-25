@@ -2,7 +2,7 @@ package tollenaar.stephen.ItemSorter.Util;
 
 import java.io.Serializable;
 
-public class Ratio implements Serializable{
+public class Ratio implements Serializable {
 
 	private static final long serialVersionUID = -2636942689733341355L;
 	private int first;
@@ -61,4 +61,17 @@ public class Ratio implements Serializable{
 			}
 		}
 	}
+
+	public void reverseCount() {
+		this.count--;
+		if (count < 0) {
+			if (isFirstSelector()) {
+				setCount(getSecond() - 1);
+			} else {
+				setCount(getFirst() - 1);
+			}
+			setFirstSelector(!isFirstSelector());
+		}
+	}
+
 }

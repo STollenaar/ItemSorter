@@ -14,6 +14,7 @@
 
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'HopperInput')" id="defaultOpen">Hopper Input</button>
+            <!-- <button class="tablinks" onclick="openTab(event, 'HopperOutput');loadItems();">Hopper Output</button> -->
             <button class="tablinks" onclick="openTab(event, 'HopperAdvanced')">Advanced Settings</button>
         </div>
 
@@ -36,6 +37,29 @@
                     </li>
                 </ul>
             </div>
+
+            <!--  <div id="HopperOutput" class="tabcontent">
+                <h2>Configure how the hopper will output the items.</h2>
+                <div id="content">
+                    <div style=" display: table-cell;">
+                        <ul class="searchUL" style="overflow-y: auto !important">
+                            <li th:each="container : ${containers}" th:object="${container}">
+                                <div id="editorDiv">
+                                    <p th:text="${container.name}"></p>
+                                    <canvas th:style="|background-image: url(${container.src}); background-repeat: no-repeat; background-size: 100% 100%|"></canvas>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="side">
+                        <div id='items'>
+                            <table id='select'>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
 
             <div id="HopperAdvanced" class="tabcontent">
                 <ul class="searchUL">

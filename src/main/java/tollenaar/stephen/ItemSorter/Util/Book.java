@@ -67,7 +67,7 @@ public class Book implements Serializable {
 		pageBuilder.set("PreventOverflow", hasPreventOverflow());
 		if (hasRatio()) {
 			pageBuilder.set("Ratio", ratio.getFirst() + " To " + ratio.getSecond());
-		}else {
+		} else {
 			pageBuilder.set("Ratio", "None");
 		}
 
@@ -171,7 +171,6 @@ public class Book implements Serializable {
 			items.add(Integer.toString(ratio.getFirst()));
 			items.add(Integer.toString(ratio.getSecond()));
 		}
-		System.out.println(items);
 		return items;
 	}
 
@@ -219,6 +218,10 @@ public class Book implements Serializable {
 
 	public boolean hasRatio() {
 		return this.ratio != null;
+	}
+
+	public void reverseRatioStep() {
+		this.ratio.reverseCount();
 	}
 
 	public static Book getBook(int frameID) {

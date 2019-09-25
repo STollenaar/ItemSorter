@@ -9,8 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -69,9 +67,9 @@ public class Database {
 				pst.setDouble(3, hopperLocation.getZ());
 				pst.setString(4, hopperLocation.getWorld().getName());
 				pst.execute();
-			}
-			saveFrames(hopperLocation, frameLocation);
 
+				saveFrames(hopperLocation, frameLocation);
+			}
 		} catch (SQLException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
 		} finally {
@@ -308,15 +306,11 @@ public class Database {
 		return false;
 	}
 
-	public Object getSavedItemFrameByHopperID(int hopperID, String field) {
-		List<Object> frames = new ArrayList<>();
+	public Frame getSavedItemFrameByHopperID(int hopperID, String field) {
 		for (Location frameLocation : Frame.getFrames()) {
 			if (Frame.getFRAME(frameLocation).getHopperID() == hopperID) {
-				frames.add(Frame.getFRAME(frameLocation).getField(field));
+				return Frame.getFRAME(frameLocation);
 			}
-		}
-		if (!frames.isEmpty()) {
-			return frames;
 		}
 
 		PreparedStatement pst = null;
@@ -328,7 +322,7 @@ public class Database {
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
 				Frame fr = new Frame(rs);
-				frames.add(fr.getField(field));
+				return fr;
 			}
 
 		} catch (SQLException e) {
@@ -342,7 +336,7 @@ public class Database {
 				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
-		return frames;
+		return null;
 	}
 
 	public Object getSavedItemFrameByLocation(Location frameLocation, String field) {
