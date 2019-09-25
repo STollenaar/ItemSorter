@@ -85,7 +85,7 @@ public class HopperHandler implements Listener {
 
 						frame = database.getSavedItemFrameByHopperID(hopperID, "id");
 						if (frame != null) {
-							book = Book.getBook(frame.getHopperID());
+							book = Book.getBook(frame.getId());
 							book.reverseRatioStep();
 						}
 					}
@@ -106,7 +106,7 @@ public class HopperHandler implements Listener {
 
 			Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
 			if (frame != null) {
-				Book book = Book.getBook(frame.getHopperID());
+				Book book = Book.getBook(frame.getId());
 				if (book != null) {
 					// checking the configuration
 					if (book.isStrictMode()) {

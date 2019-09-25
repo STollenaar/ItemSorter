@@ -40,7 +40,7 @@ public class HopperInteractHandler implements Listener {
 			
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
-			System.out.println(frameID);
+			
 			if (frame.getItem().getType() == Material.AIR) {
 				// getting to configure
 				if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
