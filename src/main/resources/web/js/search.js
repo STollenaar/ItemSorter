@@ -17,3 +17,16 @@ function itemFilter() {
         }
     }
 }
+
+function changeInput(evt, id) {
+    if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
+        document.getElementById('I' + id).setAttribute('checked', 'true');
+        evt.currentTarget.className += " active ";
+        sprites.push(id);
+    } else {
+        document.getElementById('I' + id).removeAttribute('checked');
+        evt.currentTarget.className = evt.currentTarget.className.replace('active', " ");
+        sprites = sprites.filter(e => e !== id);
+    }
+    document
+}

@@ -34,41 +34,41 @@ public class HopperInteractHandler implements Listener {
 	// handling configuring of the frames
 	@EventHandler
 	public void onHopperInteractEvent(PlayerInteractEntityEvent event) {
+
+		
 		if (event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
-
+			
 			ItemFrame frame = (ItemFrame) event.getRightClicked();
 			int frameID = (int) database.getSavedItemFrameByLocation(event.getRightClicked().getLocation(), "id");
+			
 			if (frame.getItem().getType() == Material.AIR) {
-				if (event.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR) {
-					// getting to configure
-					if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
-						database.savePlayer(event.getPlayer().getUniqueId(), frameID);
+				// getting to configure
+				if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
+					database.savePlayer(event.getPlayer().getUniqueId(), frameID);
 
-						String url = plugin.getConfig().getString("URL")
-								+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
-								+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
+					String url = plugin.getConfig().getString("URL")
+							+ plugin.getConfig().getString("initialPageResponse") + "?userCode="
+							+ event.getPlayer().getUniqueId().toString() + "&frameID=" + frameID;
 
-						TextComponent text = new TextComponent("Click here to configure the hopper sorting");
-						text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+					TextComponent text = new TextComponent("Click here to configure the hopper sorting");
+					text.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
 
-						event.getPlayer().sendMessage(text);
+					event.getPlayer().sendMessage(text);
 
-						// when replacing a configured book into an item frame
-					} else if (event.getPlayer().getInventory().getItemInMainHand()
-							.getType() == Material.WRITTEN_BOOK) {
-						BookMeta meta = (BookMeta) event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
-						if (meta.hasLore()) {
-							String bookValue = meta.getLore().get(0).replace("§", "");
-							try {
-								Book b = Book.fromString(bookValue);
-								b.addSelf(frameID);
+					// when replacing a configured book into an item frame
+				} else if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK) {
+					BookMeta meta = (BookMeta) event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+					if (meta.hasLore()) {
+						String bookValue = meta.getLore().get(0).replace("§", "");
+						try {
+							Book b = Book.fromString(bookValue);
+							b.addSelf(frameID);
 
-							} catch (ClassNotFoundException | IOException e) {
-								// no need for logging, if the item is a written
-								// book and has lore, but is not
-								// from this plugin it can throw this error.
-							}
+						} catch (ClassNotFoundException | IOException e) {
+							// no need for logging, if the item is a written
+							// book and has lore, but is not
+							// from this plugin it can throw this error.
 						}
 					}
 				}
@@ -138,7 +138,7 @@ public class HopperInteractHandler implements Listener {
 
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
-		if (event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK
+		if (event.getItem().getType() == Material.WRITTEN_BOOK
 				&& event.getItem().getItemMeta().hasLore()) {
 			try {
 				Book book = Book.fromString(event.getItem().getItemMeta().getLore().get(0).replace("§", ""));

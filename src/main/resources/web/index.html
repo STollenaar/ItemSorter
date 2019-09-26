@@ -28,8 +28,8 @@
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" class="searchUL">
                     <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
-                        <div style="cursor: pointer;" th:class="${#lists.contains(checkItems, item.displayName)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
-                            <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:checked="${#lists.contains(checkItems, item.displayName)}" th:name="|input_${item.name}|" th:value="${item.name}" />
+                        <div style="cursor: pointer;" th:class="${#lists.contains(checkItems, item.name)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
+                            <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:checked="${#lists.contains(checkItems, item.name)}" th:name="|input_${item.name}|" th:value="${item.name}" />
                             <img th:id="|IM${item.name}|" th:src="|images/block/${item.name}.png|">
                             <span th:text="${item.displayName}"></span>
                         </div>
@@ -53,6 +53,18 @@
                             <span class="tooltiptext">When enabled, will prevent the hopper from accepting items when the next inventory in the system is full.</span>
                         </div>
                     </li>
+                    <li>
+                        <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'" th:onclick="|changeInput(event,'junction_ratio')|">
+                            <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${#lists.contains(checkItems, 'junction_ratio')}" name="junction_ratio" value="junction_ratio" />
+                            <span th:text="|Junction Ratio|"></span>
+                            <input type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png "); font-size: 18px; font-family: minecraftfont; border: none;'
+                            />
+                            <span th:text="| To | "></span>
+                            <input type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" style='width: 70px; vertical-align: top; background-image: url("../images/hover_sign.png "); font-size: 18px; font-family: minecraftfont; border: none;'
+                            />
+                            <span class="tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
+                        </div>
+                    </li>
                 </ul>
             </div>
 
@@ -61,19 +73,6 @@
     </div>
 
     <script type="text/javascript ">
-        function changeInput(evt, id) {
-            if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
-                document.getElementById('I' + id).setAttribute('checked', 'true');
-                evt.currentTarget.className += " active ";
-                sprites.push(id);
-            } else {
-                document.getElementById('I' + id).removeAttribute('checked');
-                evt.currentTarget.className = evt.currentTarget.className.replace('active', " ");
-                sprites = sprites.filter(e => e !== id);
-            }
-            document
-        }
-
         // Get the element with id=" defaultOpen " and click on it
         document.getElementById('defaultOpen').click();
         fixImgSrc();

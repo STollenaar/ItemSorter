@@ -35,10 +35,13 @@ public class Book implements Serializable {
 	private int frameID;
 	private boolean strictMode;
 	private boolean preventOverflow;
+	private Ratio ratio;
 
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
+		
+		
 	}
 
 	public void addSelf(int frameID) {
@@ -63,7 +66,13 @@ public class Book implements Serializable {
 			tmp.add(getDisplayName(material));
 		}
 		pageBuilder.set("StrictMode", isStrictMode());
-		pageBuilder.set("PreventOverflow", isPreventOverflow());
+		pageBuilder.set("PreventOverflow", hasPreventOverflow());
+		if (hasRatio()) {
+			pageBuilder.set("Ratio", ratio.getFirst() + " To " + ratio.getSecond());
+		} else {
+			pageBuilder.set("Ratio", "None");
+		}
+
 		pageBuilder.set(path, tmp);
 
 		List<String> inputConfigList = new ArrayList<>(Arrays.asList(pageBuilder.saveToString().split("\n")));
@@ -91,7 +100,7 @@ public class Book implements Serializable {
 			return false;
 		}
 		// prevents accepting an item if the next container in the system is full
-		if (isPreventOverflow()) {
+		if (hasPreventOverflow()) {
 			Block hopper = inventory.getLocation().getBlock();
 			BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
 			Block target = hopper.getRelative(facing);
@@ -100,7 +109,7 @@ public class Book implements Serializable {
 				if (!hasRoom(t.getInventory(), item)) {
 					return false;
 				}
-			}else {
+			} else {
 				return false;
 			}
 		}
@@ -110,6 +119,21 @@ public class Book implements Serializable {
 	private boolean hasRoom(Inventory inventory, ItemStack item) {
 		return Arrays.stream(inventory.getStorageContents())
 				.anyMatch(itemStack -> itemStack == null || item.getAmount() < itemStack.getMaxStackSize());
+	}
+
+	// sorting the correct move detail
+	public boolean allowedMove(Inventory destination, Block hopper) {
+		BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
+		if (ratio.isFirstSelector() && hopper.getRelative(facing).getLocation().equals(destination.getLocation())) {
+			ratio.addCount();
+			return true;
+		} else if (!ratio.isFirstSelector()
+				&& hopper.getRelative(BlockFace.DOWN).getLocation().equals(destination.getLocation())) {
+			ratio.addCount();
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	private String getDisplayName(Material material) {
@@ -127,13 +151,18 @@ public class Book implements Serializable {
 	public List<String> toItems() {
 		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {
-			items.add(getDisplayName(material));
+			items.add(material.name().toLowerCase());
 		}
-		if(isPreventOverflow()) {
+		if (hasPreventOverflow()) {
 			items.add("prevent_overflow");
 		}
-		if(isStrictMode()) {
+		if (isStrictMode()) {
 			items.add("strict_mode");
+		}
+		if (hasRatio()) {
+			items.add("junction_ratio");
+			items.add(Integer.toString(ratio.getFirst()));
+			items.add(Integer.toString(ratio.getSecond()));
 		}
 		return items;
 	}
@@ -164,12 +193,28 @@ public class Book implements Serializable {
 		this.strictMode = strictMode;
 	}
 
-	public boolean isPreventOverflow() {
+	public boolean hasPreventOverflow() {
 		return preventOverflow;
 	}
 
 	public void setPreventOverflow(boolean preventOverflow) {
 		this.preventOverflow = preventOverflow;
+	}
+
+	public void setRatio(int first, int second) {
+		this.ratio = new Ratio(first, second);
+	}
+
+	public void emptyRatio() {
+		this.ratio = null;
+	}
+
+	public boolean hasRatio() {
+		return this.ratio != null;
+	}
+
+	public void reverseRatioStep() {
+		this.ratio.reverseCount();
 	}
 
 	public static Book getBook(int frameID) {

@@ -7,6 +7,9 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 public class Hopper {
 	private static Map<Location, Hopper> HOPPERS;
@@ -102,5 +105,14 @@ public class Hopper {
 		}
 
 		HOPPERS.remove(location);
+	}
+	
+	public static boolean isJunction(Block hopper) {
+		BlockFace facing = ((org.bukkit.block.data.type.Hopper) hopper.getBlockData()).getFacing();
+		if (facing != BlockFace.DOWN) {
+			return hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER
+					|| hopper.getRelative(BlockFace.DOWN).getType() == Material.HOPPER_MINECART;
+		}
+		return false;
 	}
 }
