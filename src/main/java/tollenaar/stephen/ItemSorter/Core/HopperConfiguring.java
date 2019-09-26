@@ -94,6 +94,7 @@ public class HopperConfiguring {
 
 	public void editConfigureHopper(UUID player, String bookValue, Map<String, List<String>> formParams)
 			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException {
+
 		// loading the book materials
 		Player p = Bukkit.getPlayer(player);
 		Book book = Book.fromString(bookValue);

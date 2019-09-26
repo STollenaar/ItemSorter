@@ -33,6 +33,7 @@ public class Database {
 
 	private ItemSorter plugin;
 	private Connection connection;
+
 	private static final String VERSION = "1.3";
 	private static BiMap<UUID, String> editConfigs = HashBiMap.create();
 
@@ -520,7 +521,7 @@ public class Database {
 
 	public void deleteEditHopper(UUID player) {
 		editConfigs.remove(player);
-	}
+}
 
 	public void loadHoppers() {
 		PreparedStatement pst = null;
