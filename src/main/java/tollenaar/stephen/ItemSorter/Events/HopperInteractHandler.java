@@ -34,7 +34,8 @@ public class HopperInteractHandler implements Listener {
 	// handling configuring of the frames
 	@EventHandler
 	public void onHopperInteractEvent(PlayerInteractEntityEvent event) {
-		System.out.println(event.getRightClicked().getLocation());
+
+		
 		if (event.getRightClicked().getType() == EntityType.ITEM_FRAME
 				&& database.hasSavedItemFrame(event.getRightClicked().getLocation())) {
 			
