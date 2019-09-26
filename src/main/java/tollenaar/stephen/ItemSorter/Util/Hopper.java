@@ -73,6 +73,10 @@ public class Hopper {
 	public void setWorld(String world) {
 		this.world = world;
 	}
+	
+	public Location getLocation() {
+		return new Location(Bukkit.getWorld(getWorld()), getX(), getY(), getZ());
+	}
 
 	public Object getField(String field) {
 		switch (field) {
@@ -99,6 +103,19 @@ public class Hopper {
 		return HOPPERS.get(location);
 	}
 
+	public static Hopper getHOPPER(int id) {
+		if (HOPPERS == null) {
+			HOPPERS = new HashMap<>();
+		}
+
+		for (Location key : HOPPERS.keySet()) {
+			if (HOPPERS.get(key).getId() == id) {
+				return HOPPERS.get(key);
+			}
+		}
+		return null;
+	}
+
 	public static void removeHOPPER(Location location) {
 		if (HOPPERS == null) {
 			HOPPERS = new HashMap<>();
@@ -106,7 +123,7 @@ public class Hopper {
 
 		HOPPERS.remove(location);
 	}
-	
+
 	public static boolean isJunction(Block hopper) {
 		BlockFace facing = ((org.bukkit.block.data.type.Hopper) hopper.getBlockData()).getFacing();
 		if (facing != BlockFace.DOWN) {

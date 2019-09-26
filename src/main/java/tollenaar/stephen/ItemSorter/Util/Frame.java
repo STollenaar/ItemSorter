@@ -104,6 +104,10 @@ public class Frame {
 	public void setPitch(float pitch) {
 		this.pitch = pitch;
 	}
+	
+	public Location getLocation() {
+		return new Location(Bukkit.getWorld(getWorld()), getX(), getY(), getZ(), getYaw(), getPitch());
+	}
 
 	public Object getField(String field) {
 		switch (field) {

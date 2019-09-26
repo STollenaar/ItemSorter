@@ -32,7 +32,7 @@ public class Book implements Serializable {
 	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
 
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
-	private int frameID;
+	private transient int frameID;
 	private boolean strictMode;
 	private boolean preventOverflow;
 	private Ratio ratio;
@@ -40,11 +40,10 @@ public class Book implements Serializable {
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
-		
-		
 	}
 
 	public void addSelf(int frameID) {
+		this.frameID = frameID;
 		if (BOOKS == null) {
 			BOOKS = new HashMap<>();
 		}

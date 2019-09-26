@@ -1,6 +1,5 @@
 @import url("./options.css");
 @import url("./tabs.css");
-
 @font-face {
     font-family: "minecraftfont";
     src: url("../fonts/minecraftfont.eot") format("eot"), url("../fonts/minecraftfont.woff") format("woff"), url("../fonts/minecraftfont.ttf") format("truetype");
@@ -26,6 +25,15 @@ h3 {
     padding: 14px 16px;
     font-size: 25px;
     font-family: "minecraftfont";
+}
+
+.ratio {
+    width: 70px;
+    vertical-align: top;
+    background-image: url("../images/hover_sign.png ");
+    font-size: 18px;
+    font-family: "minecraftfont";
+    border: none;
 }
 
 #content {

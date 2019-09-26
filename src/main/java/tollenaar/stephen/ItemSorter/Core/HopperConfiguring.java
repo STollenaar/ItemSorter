@@ -143,7 +143,6 @@ public class HopperConfiguring {
 				.create();
 
 		meta.spigot().addPage(editPage);
-
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
 		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
@@ -166,5 +165,4 @@ public class HopperConfiguring {
 			hidden.append(ChatColor.COLOR_CHAR + "" + c);
 		return hidden.toString();
 	}
-
 }
