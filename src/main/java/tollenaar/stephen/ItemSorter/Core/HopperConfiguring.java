@@ -143,7 +143,8 @@ public class HopperConfiguring {
 				.create();
 
 		meta.spigot().addPage(editPage);
-		// changing the item frame item
+
+    // changing the item frame item
 		replaceItem.setItemMeta(meta);
 		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
 				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && p.getInventory().getItemInMainHand()

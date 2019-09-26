@@ -40,6 +40,8 @@ public class Book implements Serializable {
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
+		
+		
 	}
 
 	public void addSelf(int frameID) {
