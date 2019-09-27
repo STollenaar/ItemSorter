@@ -1,7 +1,6 @@
 package tollenaar.stephen.ItemSorter.Commands;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
 import tollenaar.stephen.ItemSorter.Util.Book;
 
@@ -39,27 +35,17 @@ public class Legacy extends SubCommand {
 					loreList.add(convertToInvisibleString(book.toString()));
 
 					meta.setTitle("HopperConfiguration");
-					meta.setAuthor(player.getName());
+					meta.setAuthor("ItemSorter");
 					meta.setLore(loreList);
 
 					meta.setPages(book.toPages());
 
-					BaseComponent[] editPage = new ComponentBuilder(
-							"To edit the configuration click here.")
-									.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
-											plugin.getConfig().getString("URL")
-													+ plugin.getConfig().getString("editPageResponse") + "?configData="
-													+ URLEncoder.encode(book.toString(),
-															java.nio.charset.StandardCharsets.UTF_8.toString())))
-									.create();
-
-					meta.spigot().addPage(editPage);
 					player.getInventory().getItemInMainHand().setItemMeta(meta);
 
 				} catch (ClassNotFoundException | IOException e) {
 					player.sendMessage("This is not a correct hopperconfiguration");
 				}
-			}else {
+			} else {
 				player.sendMessage("This is not a correct hopperconfiguration");
 			}
 		}
