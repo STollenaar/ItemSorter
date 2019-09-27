@@ -34,6 +34,7 @@ public class Book implements Serializable {
 
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
 	private transient int frameID = -1;
+
 	private boolean strictMode;
 	private boolean preventOverflow;
 	private Ratio ratio;
