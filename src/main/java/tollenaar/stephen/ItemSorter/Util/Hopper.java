@@ -12,7 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
 public class Hopper {
-	private static Map<Location, Hopper> HOPPERS;
+	private static Map<Location, Hopper> HOPPERS = new HashMap<>();
 
 	private final int id;
 	private double x;
@@ -32,9 +32,6 @@ public class Hopper {
 		this.z = z;
 		this.world = world;
 
-		if (HOPPERS == null) {
-			HOPPERS = new HashMap<>();
-		}
 		HOPPERS.put(new Location(Bukkit.getWorld(world), x, y, z), this);
 	}
 
@@ -96,18 +93,10 @@ public class Hopper {
 	}
 
 	public static Hopper getHOPPER(Location location) {
-		if (HOPPERS == null) {
-			HOPPERS = new HashMap<>();
-		}
-
 		return HOPPERS.get(location);
 	}
 
 	public static Hopper getHOPPER(int id) {
-		if (HOPPERS == null) {
-			HOPPERS = new HashMap<>();
-		}
-
 		for (Location key : HOPPERS.keySet()) {
 			if (HOPPERS.get(key).getId() == id) {
 				return HOPPERS.get(key);
@@ -117,10 +106,6 @@ public class Hopper {
 	}
 
 	public static void removeHOPPER(Location location) {
-		if (HOPPERS == null) {
-			HOPPERS = new HashMap<>();
-		}
-
 		HOPPERS.remove(location);
 	}
 

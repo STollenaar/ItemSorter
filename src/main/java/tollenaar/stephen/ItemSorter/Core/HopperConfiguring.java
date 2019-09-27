@@ -32,7 +32,7 @@ public class HopperConfiguring {
 	}
 
 	public void configureHopper(int frameID, UUID player, Map<String, List<String>> formParams)
-			throws UnsupportedEncodingException {
+			throws UnsupportedEncodingException, IllegalArgumentException {
 		Frame frame = Frame.getFRAME(frameID);
 		ItemFrame fr = frame.getEntityFrame();
 
@@ -60,8 +60,14 @@ public class HopperConfiguring {
 			book.setPreventOverflow(false);
 		}
 		if (formParams.keySet().contains("junction_ratio")) {
-			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
-					Integer.parseInt(formParams.get("secondRatio").get(0)));
+			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
+			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
+
+			if (first <= 0 || second <= 0) {
+				throw new IllegalArgumentException("Can't have a 0 or negative ratio");
+			}
+
+			book.setRatio(first, second);
 		} else {
 			book.emptyRatio();
 		}
@@ -93,11 +99,18 @@ public class HopperConfiguring {
 	}
 
 	public void editConfigureHopper(UUID player, String bookValue, Map<String, List<String>> formParams)
-			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException {
+			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException,
+			IllegalArgumentException {
 
 		// loading the book materials
 		Player p = Bukkit.getPlayer(player);
-		Book book = Book.fromString(bookValue);
+		Book book = Book.getBook(bookValue);
+		System.out.println(book);
+		if (book == null) {
+			book = Book.fromString(bookValue);
+		}
+		System.out.println(book.getFrameID());
+
 		book.emptyInputConfig();
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
@@ -116,8 +129,14 @@ public class HopperConfiguring {
 			book.setPreventOverflow(false);
 		}
 		if (formParams.keySet().contains("junction_ratio")) {
-			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
-					Integer.parseInt(formParams.get("secondRatio").get(0)));
+			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
+			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
+
+			if (first <= 0 || second <= 0) {
+				throw new IllegalArgumentException("Can't have a 0 or negative ratio");
+			}
+
+			book.setRatio(first, second);
 		} else {
 			book.emptyRatio();
 		}
@@ -143,8 +162,7 @@ public class HopperConfiguring {
 				.create();
 
 		meta.spigot().addPage(editPage);
-
-    // changing the item frame item
+		// changing the item frame item
 		replaceItem.setItemMeta(meta);
 		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
 				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && p.getInventory().getItemInMainHand()
