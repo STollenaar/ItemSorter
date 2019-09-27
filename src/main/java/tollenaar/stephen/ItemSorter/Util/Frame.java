@@ -12,7 +12,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 
 public class Frame {
-	private static Map<Location, Frame> FRAMES;
+	private static Map<Location, Frame> FRAMES = new HashMap<>();
 
 	private final int id;
 	private int hopperID;
@@ -39,9 +39,6 @@ public class Frame {
 		this.yaw = yaw;
 		this.world = world;
 
-		if (FRAMES == null) {
-			FRAMES = new HashMap<>();
-		}
 		FRAMES.put(new Location(Bukkit.getWorld(world), x, y, z, yaw, pitch), this);
 	}
 
@@ -144,18 +141,10 @@ public class Frame {
 	}
 
 	public static Frame getFRAME(Location location) {
-		if (FRAMES == null) {
-			FRAMES = new HashMap<>();
-		}
-
 		return FRAMES.get(location);
 	}
 
 	public static Frame getFRAME(int id) {
-		if (FRAMES == null) {
-			FRAMES = new HashMap<>();
-		}
-
 		for (Location key : FRAMES.keySet()) {
 			if (FRAMES.get(key).getId() == id) {
 				return FRAMES.get(key);
@@ -169,10 +158,6 @@ public class Frame {
 	}
 
 	public static void removeFRAME(Location location) {
-		if (FRAMES == null) {
-			FRAMES = new HashMap<>();
-		}
-
 		FRAMES.remove(location);
 	}
 }

@@ -2,7 +2,6 @@ package tollenaar.stephen.ItemSorter.Core;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,23 +15,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import tollenaar.stephen.ItemSorter.Util.Book;
+import tollenaar.stephen.ItemSorter.Util.EditConfig;
 import tollenaar.stephen.ItemSorter.Util.Frame;
 
 public class HopperConfiguring {
-	private ItemSorter plugin;
 	private Database database;
 
 	public HopperConfiguring(ItemSorter plugin) {
-		this.plugin = plugin;
 		this.database = plugin.getDatabase();
 	}
 
 	public void configureHopper(int frameID, UUID player, Map<String, List<String>> formParams)
-			throws UnsupportedEncodingException {
+			throws UnsupportedEncodingException, IllegalArgumentException {
 		Frame frame = Frame.getFRAME(frameID);
 		ItemFrame fr = frame.getEntityFrame();
 
@@ -60,8 +55,14 @@ public class HopperConfiguring {
 			book.setPreventOverflow(false);
 		}
 		if (formParams.keySet().contains("junction_ratio")) {
-			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
-					Integer.parseInt(formParams.get("secondRatio").get(0)));
+			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
+			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
+
+			if (first <= 0 || second <= 0) {
+				throw new IllegalArgumentException("Can't have a 0 or negative ratio");
+			}
+
+			book.setRatio(first, second);
 		} else {
 			book.emptyRatio();
 		}
@@ -74,18 +75,10 @@ public class HopperConfiguring {
 		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setTitle("HopperConfiguration");
-		meta.setAuthor(Bukkit.getPlayer(player).getName());
+		meta.setAuthor("ItemSorter");
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
-
-		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-				.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
-						plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse")
-								+ "?configData=" + URLEncoder.encode(bookValue, "UTF-8")))
-				.create();
-
-		meta.spigot().addPage(editPage);
 
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
@@ -93,11 +86,17 @@ public class HopperConfiguring {
 	}
 
 	public void editConfigureHopper(UUID player, String bookValue, Map<String, List<String>> formParams)
-			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException {
+			throws ClassNotFoundException, IOException, NullPointerException, NumberFormatException,
+			IllegalArgumentException {
 
 		// loading the book materials
 		Player p = Bukkit.getPlayer(player);
-		Book book = Book.fromString(bookValue);
+		EditConfig editConfig = database.getSavedEdit(player);
+		Book book = Book.getBook(bookValue);
+		if (book == null) {
+			book = Book.fromString(bookValue);
+		}
+
 		book.emptyInputConfig();
 		for (String key : formParams.keySet()) {
 			String value = formParams.get(key).get(0);
@@ -116,8 +115,14 @@ public class HopperConfiguring {
 			book.setPreventOverflow(false);
 		}
 		if (formParams.keySet().contains("junction_ratio")) {
-			book.setRatio(Integer.parseInt(formParams.get("firstRatio").get(0)),
-					Integer.parseInt(formParams.get("secondRatio").get(0)));
+			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
+			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
+
+			if (first <= 0 || second <= 0) {
+				throw new IllegalArgumentException("Can't have a 0 or negative ratio");
+			}
+
+			book.setRatio(first, second);
 		} else {
 			book.emptyRatio();
 		}
@@ -131,26 +136,19 @@ public class HopperConfiguring {
 
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setTitle("HopperConfiguration");
-		meta.setAuthor(Bukkit.getPlayer(player).getName());
+		meta.setAuthor("ItemSorter");
 		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
 
-		BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.").event(new ClickEvent(
-				ClickEvent.Action.OPEN_URL,
-				plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse") + "?configData="
-						+ URLEncoder.encode(book.toString(), java.nio.charset.StandardCharsets.UTF_8.toString())))
-				.create();
-
-		meta.spigot().addPage(editPage);
-
-    // changing the item frame item
+		// changing the item frame item
 		replaceItem.setItemMeta(meta);
-		if (p.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK
-				&& p.getInventory().getItemInMainHand().getItemMeta().hasLore() && p.getInventory().getItemInMainHand()
-						.getItemMeta().getLore().get(0).replace("§", "").equals(bookValue)) {
-			p.getInventory().setItemInMainHand(replaceItem);
-		} else if (Frame.getFRAME(book.getFrameID()) != null
+		if (!editConfig.isHopper() && p.getInventory().getItem(editConfig.getSlot()).getType() == Material.WRITTEN_BOOK
+				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().hasLore()
+				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().getLore().get(0).replace("§", "")
+						.equals(bookValue)) {
+			p.getInventory().getItem(editConfig.getSlot()).setItemMeta(meta);
+		} else if (editConfig.isHopper() && Frame.getFRAME(book.getFrameID()) != null
 				&& Frame.getFRAME(book.getFrameID()).getEntityFrame() != null) {
 			Frame.getFRAME(book.getFrameID()).getEntityFrame().setItem(replaceItem);
 		} else {

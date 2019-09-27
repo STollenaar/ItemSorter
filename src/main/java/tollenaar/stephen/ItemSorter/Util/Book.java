@@ -9,9 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.WordUtils;
@@ -26,13 +24,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 4519138450923555946L;
-	private static transient Map<Integer, Book> BOOKS; // mapped from frameID to
+	private static transient BiMap<Integer, Book> BOOKS = HashBiMap.create(); // mapped from frameID to
 
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
-	private transient int frameID;
+	private transient int frameID = -1;
+
 	private boolean strictMode;
 	private boolean preventOverflow;
 	private Ratio ratio;
@@ -40,15 +42,10 @@ public class Book implements Serializable {
 	public Book(int frameID) {
 		this.frameID = frameID;
 		this.addSelf(frameID);
-		
-		
 	}
 
 	public void addSelf(int frameID) {
 		this.frameID = frameID;
-		if (BOOKS == null) {
-			BOOKS = new HashMap<>();
-		}
 		BOOKS.put(frameID, this);
 	}
 
@@ -85,11 +82,11 @@ public class Book implements Serializable {
 		}
 
 		// preventing a book that's too big
-		if (pages.size() >= 15) {
-			String[] lastPage = pages.get(14).split("\n");
+		if (pages.size() >= 50) {
+			String[] lastPage = pages.get(49).split("\n");
 			lastPage[lastPage.length - 1] = "...";
 			pages.set(14, String.join("\n", lastPage));
-			pages = pages.subList(0, 15);
+			pages = pages.subList(0, 50);
 		}
 
 		return pages;
@@ -219,11 +216,17 @@ public class Book implements Serializable {
 	}
 
 	public static Book getBook(int frameID) {
-		if (BOOKS == null) {
-			BOOKS = new HashMap<>();
-		}
-
 		return BOOKS.get(frameID);
+	}
+
+	public static Book getBook(String bookvalue) {
+		System.out.println(BOOKS + " " + bookvalue);
+		for (Book book : BOOKS.values()) {
+			if (book.toString().equals(bookvalue)) {
+				return book;
+			}
+		}
+		return null;
 	}
 
 	public static List<Book> getBook(List<Integer> frameIDs) {
@@ -237,9 +240,6 @@ public class Book implements Serializable {
 	}
 
 	public static void removeBook(int frameID) {
-		if (BOOKS == null) {
-			BOOKS = new HashMap<>();
-		}
 		BOOKS.remove(frameID);
 	}
 

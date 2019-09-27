@@ -18,6 +18,7 @@ function itemFilter() {
     }
 }
 
+//for the input with clicking
 function changeInput(evt, id) {
     if (document.getElementById('I' + id).getAttribute('checked') === 'false' || document.getElementById('I' + id).getAttribute('checked') === null) {
         document.getElementById('I' + id).setAttribute('checked', 'true');
@@ -28,5 +29,17 @@ function changeInput(evt, id) {
         evt.currentTarget.className = evt.currentTarget.className.replace('active', " ");
         sprites = sprites.filter(e => e !== id);
     }
-    document
+}
+
+//for the inout where you type
+function changeInputKey(evt, id) {
+    if (document.getElementById('firstRatio').value > 0 && document.getElementById('secondRatio').value > 0) {
+        if (!evt.currentTarget.parentElement.className.includes('active')) {
+            evt.currentTarget.parentElement.className += " active";
+            document.getElementById('Ijunction_ratio').setAttribute('checked', 'true');
+        }
+    } else {
+        evt.currentTarget.parentElement.className = evt.currentTarget.parentElement.className.replace('active', " ");
+        document.getElementById('Ijunction_ratio').removeAttribute('checked');
+    }
 }

@@ -54,14 +54,17 @@
                         </div>
                     </li>
                     <li>
-                        <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'" th:onclick="|changeInput(event,'junction_ratio')|">
+                        <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'">
                             <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${#lists.contains(checkItems, 'junction_ratio')}" name="junction_ratio" value="junction_ratio" />
                             <span th:text="|Junction Ratio|"></span>
-                            <input class="ratio" type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" />
+                            <input class="ratio" id="firstRatio" type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" th:onchange="|changeInputKey(event, 'firstRatio')|" />
                             <span th:text="| To | "></span>
-                            <input class="ratio" type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" />
-                            <span class="tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
+                            <input class="ratio" id="secondRatio" type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" th:onchange="|changeInputKey(event, 'secondRatio')|" />
+                            <span class=" tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
                         </div>
+                    </li>
+                    <li>
+
                     </li>
                 </ul>
             </div>
@@ -76,5 +79,4 @@
         fixImgSrc();
     </script>
 </body>
-
 </html>
