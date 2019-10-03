@@ -23,6 +23,7 @@ import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -46,7 +47,9 @@ public class ItemSorter extends JavaPlugin {
 	private static Javalin app;
 	private static List<Item> minecraftItems;
 	private static List<Image> containers = new ArrayList<>();
-
+	private static List<String> enchantments = new ArrayList<>();
+	
+	
 	@Override
 	public void onEnable() {
 		config = this.getConfig();
@@ -73,10 +76,16 @@ public class ItemSorter extends JavaPlugin {
 
 			Type ITEM_TYPE = new TypeToken<List<Item>>() {
 			}.getType();
+			
+			for(Enchantment enchant : Enchantment.values()) {
+				enchantments.add(enchant.getKey().getKey());
+			}
+			
 			Gson gson = new Gson();
 
 			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
 			minecraftItems = gson.fromJson(reader, ITEM_TYPE);
+			
 			reader.close();
 
 			Enumeration<? extends ZipEntry> entries = jar.entries();
@@ -180,6 +189,7 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("containers", containers);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
 				ctx.attribute("items", minecraftItems);
+				ctx.attribute("enchantments", enchantments);
 				ctx.attribute("checkItems", new ArrayList<String>());
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
@@ -202,6 +212,7 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
 				ctx.attribute("containers", containers);
+				ctx.attribute("enchantments", enchantments);
 				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
 				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
