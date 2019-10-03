@@ -33,7 +33,8 @@ public class Book implements Serializable {
 	private static transient BiMap<Integer, Book> BOOKS = HashBiMap.create(); // mapped from frameID to
 
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
-	private transient int frameID;
+	private transient int frameID = -1;
+
 	private boolean strictMode;
 	private boolean preventOverflow;
 	private Ratio ratio;
@@ -44,7 +45,6 @@ public class Book implements Serializable {
 	}
 
 	public void addSelf(int frameID) {
-		System.out.println(BOOKS);
 		this.frameID = frameID;
 		BOOKS.put(frameID, this);
 	}
@@ -82,11 +82,11 @@ public class Book implements Serializable {
 		}
 
 		// preventing a book that's too big
-		if (pages.size() >= 15) {
-			String[] lastPage = pages.get(14).split("\n");
+		if (pages.size() >= 50) {
+			String[] lastPage = pages.get(49).split("\n");
 			lastPage[lastPage.length - 1] = "...";
 			pages.set(14, String.join("\n", lastPage));
-			pages = pages.subList(0, 15);
+			pages = pages.subList(0, 50);
 		}
 
 		return pages;
@@ -220,6 +220,7 @@ public class Book implements Serializable {
 	}
 
 	public static Book getBook(String bookvalue) {
+		System.out.println(BOOKS + " " + bookvalue);
 		for (Book book : BOOKS.values()) {
 			if (book.toString().equals(bookvalue)) {
 				return book;

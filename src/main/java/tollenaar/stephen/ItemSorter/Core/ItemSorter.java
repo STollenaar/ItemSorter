@@ -206,9 +206,9 @@ public class ItemSorter extends JavaPlugin {
 
 		app.get("/" + config.getString("editPageResponse"), ctx -> {
 			try {
-				String bookValue = ctx.queryParam("configData");
+				String user = ctx.queryParam("configData");
+				String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
 				List<String> checkItems = Book.fromString(bookValue).toItems();
-				String user = database.getSavedPlayer(bookValue);
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
 				ctx.attribute("containers", containers);
