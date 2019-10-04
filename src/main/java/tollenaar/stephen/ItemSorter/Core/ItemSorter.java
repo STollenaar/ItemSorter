@@ -21,11 +21,13 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -35,9 +37,10 @@ import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.Image;
-import tollenaar.stephen.ItemSorter.Util.Item;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Web.Attributes;
+import tollenaar.stephen.ItemSorter.Util.Web.Image;
+import tollenaar.stephen.ItemSorter.Util.Web.Item;
 
 public class ItemSorter extends JavaPlugin {
 
@@ -45,11 +48,8 @@ public class ItemSorter extends JavaPlugin {
 	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
 	private static Javalin app;
-	private static List<Item> minecraftItems;
-	private static List<Image> containers = new ArrayList<>();
-	private static List<String> enchantments = new ArrayList<>();
-	
-	
+	private static Attributes attributes;
+
 	@Override
 	public void onEnable() {
 		config = this.getConfig();
@@ -65,7 +65,7 @@ public class ItemSorter extends JavaPlugin {
 		pm.registerEvents(new HopperHandler(database), this);
 
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
-		
+
 		try {
 			// getting all the items in minecraft and processing them into a
 			// java object
@@ -76,27 +76,35 @@ public class ItemSorter extends JavaPlugin {
 
 			Type ITEM_TYPE = new TypeToken<List<Item>>() {
 			}.getType();
-			
-			for(Enchantment enchant : Enchantment.values()) {
-				enchantments.add(enchant.getKey().getKey());
-			}
-			
+
 			Gson gson = new Gson();
 
 			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
-			minecraftItems = gson.fromJson(reader, ITEM_TYPE);
-			
-			reader.close();
 
 			Enumeration<? extends ZipEntry> entries = jar.entries();
 
+			List<Image> tmp = new ArrayList<>();
 			while (entries.hasMoreElements()) {
 				ZipEntry en = entries.nextElement();
 				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
-					containers.add(new Image(en.getName().replace("web/", ""),  loadImage(jar.getInputStream(en))));
+					tmp.add(new Image(en.getName().replace("web/", ""), loadImage(jar.getInputStream(en))));
 				}
 			}
 
+			List<Item> t = new ArrayList<>();
+			for (Enchantment ent : Enchantment.values()) {
+				t.add(new Item(ent.hashCode(), 1, ent.getKey().getKey(),
+						WordUtils.capitalizeFully(ent.getKey().getKey().replace("_", " "))));
+			}
+
+			List<Item> t2 = new ArrayList<>();
+			for (PotionEffectType ent : PotionEffectType.values()) {
+				t2.add(new Item(ent.hashCode(), 1, ent.getName(), WordUtils.capitalizeFully(ent.getName().replace("_"," " ))));
+			}
+
+			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp, t, t2);
+
+			reader.close();
 			jar.close();
 		} catch (IOException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
@@ -174,8 +182,8 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -186,10 +194,8 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
-				ctx.attribute("containers", containers);
+				ctx.attribute("attributes", attributes);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
-				ctx.attribute("items", minecraftItems);
-				ctx.attribute("enchantments", enchantments);
 				ctx.attribute("checkItems", new ArrayList<String>());
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
@@ -211,10 +217,8 @@ public class ItemSorter extends JavaPlugin {
 				List<String> checkItems = Book.fromString(bookValue).toItems();
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
-				ctx.attribute("containers", containers);
-				ctx.attribute("enchantments", enchantments);
+				ctx.attribute("attributes", attributes);
 				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
-				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayer(UUID.fromString(user))) {
@@ -223,8 +227,8 @@ public class ItemSorter extends JavaPlugin {
 				}
 
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -246,8 +250,8 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -261,16 +265,16 @@ public class ItemSorter extends JavaPlugin {
 	public Database getDatabase() {
 		return database;
 	}
-	
-	private  BufferedImage loadImage(InputStream file){
-	    BufferedImage buff = null;
-	    try {
-	        buff = ImageIO.read(file);
-	    } catch (IOException e) {
-	    	Bukkit.getLogger().log(Level.SEVERE, e.toString());
-	        return null;
-	    }
-	    return buff;
+
+	private BufferedImage loadImage(InputStream file) {
+		BufferedImage buff = null;
+		try {
+			buff = ImageIO.read(file);
+		} catch (IOException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+			return null;
+		}
+		return buff;
 
 	}
 }

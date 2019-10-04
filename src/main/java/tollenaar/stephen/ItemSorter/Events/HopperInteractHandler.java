@@ -23,7 +23,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import tollenaar.stephen.ItemSorter.Core.Database;
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
-import tollenaar.stephen.ItemSorter.Util.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -118,8 +118,9 @@ public class HopperInteractHandler implements Listener {
 
 	private static String convertToInvisibleString(String s) {
 		StringBuilder hidden = new StringBuilder();
-		for (char c : s.toCharArray())
+		for (char c : s.toCharArray()) {
 			hidden.append(ChatColor.COLOR_CHAR + "" + c);
+		}
 		return hidden.toString();
 	}
 

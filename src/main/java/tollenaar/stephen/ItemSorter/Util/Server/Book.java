@@ -1,4 +1,4 @@
-package tollenaar.stephen.ItemSorter.Util;
+package tollenaar.stephen.ItemSorter.Util.Server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +26,8 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import tollenaar.stephen.ItemSorter.Util.Web.Ratio;
 
 public class Book implements Serializable {
 

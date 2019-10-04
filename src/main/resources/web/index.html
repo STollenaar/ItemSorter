@@ -27,7 +27,7 @@
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
                 <ul id="searchUL" class="searchUL">
-                    <li th:each="item : ${items}" th:object="${item}" th:if="${item.name} != 'air'">
+                    <li th:each="item : ${attributes.items}" th:object="${item}" th:if="${item.name} != 'air'">
                         <div style="cursor: pointer;" th:class="${#lists.contains(checkItems, item.name)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
                             <input type="checkbox" th:id="|I${item.name}|" style="display: none" th:checked="${#lists.contains(checkItems, item.name)}" th:name="|input_${item.name}|" th:value="${item.name}" />
                             <img th:id="|IM${item.name}|" th:src="|images/block/${item.name}.png|">
@@ -37,43 +37,66 @@
                 </ul>
             </div>
 
-            <div id="HopperAdvanced" class="tabcontent content">
-                <div style=" display: table-cell;">
-                    <ul class="searchUL">
-                        <li>
-                            <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'strict_mode')}? 'active'" th:onclick="|changeInput(event,'strict_mode')|">
-                                <input type="checkbox" id="Istrict_mode" style="display: none" th:checked="${#lists.contains(checkItems, 'strict_mode')}" name="strict_mode" value="strict_mode" />
-                                <span th:text="|Strict Mode|"></span>
-                                <span class="tooltiptext">When enabled, will even prevent the hopper pickup items that don't belong in it, instead of just relying on container to container action.</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'prevent_overflow')}? 'active'" th:onclick="|changeInput(event,'prevent_overflow')|">
-                                <input type="checkbox" id="Iprevent_overflow" style="display: none" th:checked="${#lists.contains(checkItems, 'prevent_overflow')}" name="prevent_overflow" value="prevent_overflow" />
-                                <span th:text="|Prevent Overflow|"></span>
-                                <span class="tooltiptext">When enabled, will prevent the hopper from accepting items when the next inventory in the system is full.</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'">
-                                <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${#lists.contains(checkItems, 'junction_ratio')}" name="junction_ratio" value="junction_ratio" />
-                                <span th:text="|Junction Ratio|"></span>
-                                <input class="ratio" id="firstRatio" type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" th:onchange="|changeInputKey(event, 'firstRatio')|" />
-                                <span th:text="| To | "></span>
-                                <input class="ratio" id="secondRatio" type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" th:onchange="|changeInputKey(event, 'secondRatio')|" />
-                                <span class=" tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="tooltip side" th:classappend="${#lists.contains(checkItems, 'efficiency_blocker')}? 'active'">
-                    <input type="checkbox" id="Iefficiency_blocker" style="display: none" th:checked="${#lists.contains(checkItems, 'efficiency_blocker')}" name="efficiency_blocker" value="efficiency_blocker" />
-                    <span th:text="|Enchantments allowed|"></span>
-                    <p th:each="enchantment : ${enchantments}" th:object="${enchantment}">
-                        <input th:id="|I${enchantment}|" type="checkbox" th:name="${enchantment} " th:onclick="|changeInputButton(events, ${enchantment})| " />
-                        <label th:text="${enchantment} " th:for="|I${enchantment}| "></label>
-                    </p>
-                    <span class=" tooltiptext ">When enabled, will block books that have not the selected enchantments.</span>
+            <div id="HopperAdvanced" class="tabcontent">
+                <div class="content">
+                    <div style=" display: table-cell;">
+                        <ul class="searchUL">
+                            <li>
+                                <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'strict_mode')}? 'active'" th:onclick="|changeInput(event,'strict_mode')|">
+                                    <input type="checkbox" id="Istrict_mode" style="display: none" th:checked="${#lists.contains(checkItems, 'strict_mode')}" name="strict_mode" value="strict_mode" />
+                                    <span th:text="|Strict Mode|"></span>
+                                    <span class="tooltiptext">When enabled, will even prevent the hopper pickup items that don't belong in it, instead of just relying on container to container action.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'prevent_overflow')}? 'active'" th:onclick="|changeInput(event,'prevent_overflow')|">
+                                    <input type="checkbox" id="Iprevent_overflow" style="display: none" th:checked="${#lists.contains(checkItems, 'prevent_overflow')}" name="prevent_overflow" value="prevent_overflow" />
+                                    <span th:text="|Prevent Overflow|"></span>
+                                    <span class="tooltiptext">When enabled, will prevent the hopper from accepting items when the next inventory in the system is full.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div style="cursor: pointer;" class="tooltip" th:classappend="${#lists.contains(checkItems, 'junction_ratio')}? 'active'">
+                                    <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${#lists.contains(checkItems, 'junction_ratio')}" name="junction_ratio" value="junction_ratio" />
+                                    <span th:text="|Junction Ratio|"></span>
+                                    <input class="ratio" id="firstRatio" type="number" name="firstRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-2]}:'0'" th:onchange="|changeInputKey(event, 'firstRatio')|" />
+                                    <span th:text="| To | "></span>
+                                    <input class="ratio" id="secondRatio" type="number" name="secondRatio" th:value="${#lists.contains(checkItems, 'junction_ratio')}? ${checkItems[#lists.size(checkItems)-1]}:'0'" th:onchange="|changeInputKey(event, 'secondRatio')|" />
+                                    <span class=" tooltiptext ">When enabled, will try and follow the ratio set for item moving.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="side">
+                        <ul class="searchUL">
+                            <li>
+                                <div class="tooltip" th:classappend="${#lists.contains(checkItems, 'efficiency_blocker')}? 'active'">
+                                    <input type="checkbox" id="Iefficiency_blocker" style="display: none" th:checked="${#lists.contains(checkItems, 'efficiency_blocker')}" name="efficiency_blocker" value="efficiency_blocker" />
+                                    <span th:text="|Enchantments allowed|"></span>
+                                    <p th:each="enchantment : ${attributes.enchantments}" th:object="${enchantment}">
+                                        <input th:id="|I${enchantment.name}|" type="checkbox" th:name="${enchantment.name} " th:onclick="|changeInputButton(events, ${enchantment.name})| " />
+                                        <label th:text="${enchantment.displayName} " th:for="|I${enchantment.name}| "></label>
+                                    </p>
+                                    <span class=" tooltiptext ">When enabled, will block books that have not the selected enchantments.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="side">
+                        <ul class="searchUL">
+                            <li>
+                                <div class="tooltip" th:classappend="${#lists.contains(checkItems, 'potion_blocker')}? 'active'">
+                                    <input type="checkbox" id="Ipotion_blocker" style="display: none" th:checked="${#lists.contains(checkItems, 'potion_blocker')}" name="potion_blocker" value="potion_blocker" />
+                                    <span th:text="|Potions allowed|"></span>
+                                    <p th:each="potion : ${attributes.potions}" th:object="${potion}">
+                                        <input th:id="|I${potion.name}|" type="checkbox" th:name="${potion.name} " th:onclick="|changeInputButton(events, ${potion.name})| " />
+                                        <label th:text="${potion.displayName} " th:for="|I${potion.name}| "></label>
+                                    </p>
+                                    <span class=" tooltiptext ">When enabled, will block potions that have not the selected potions.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -87,4 +110,5 @@
         fixImgSrc();
     </script>
 </body>
+
 </html>

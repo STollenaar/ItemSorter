@@ -1,4 +1,4 @@
-package tollenaar.stephen.ItemSorter.Util;
+package tollenaar.stephen.ItemSorter.Util.Web;
 
 import java.awt.image.BufferedImage;
 

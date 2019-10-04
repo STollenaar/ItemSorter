@@ -15,9 +15,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.EditConfig;
-import tollenaar.stephen.ItemSorter.Util.Frame;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.EditConfig;
+import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 
 public class HopperConfiguring {
 	private Database database;

@@ -10,9 +10,9 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 
 import tollenaar.stephen.ItemSorter.Core.Database;
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.Frame;
-import tollenaar.stephen.ItemSorter.Util.Hopper;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.Frame;
+import tollenaar.stephen.ItemSorter.Util.Server.Hopper;
 
 public class HopperHandler implements Listener {
 
