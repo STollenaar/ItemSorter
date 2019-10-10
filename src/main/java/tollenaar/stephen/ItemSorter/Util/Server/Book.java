@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.WordUtils;
@@ -21,12 +22,17 @@ import org.bukkit.block.Container;
 import org.bukkit.block.data.type.Hopper;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import tollenaar.stephen.ItemSorter.Util.Web.HopperItems;
 import tollenaar.stephen.ItemSorter.Util.Web.Ratio;
 
 public class Book implements Serializable {
@@ -35,6 +41,8 @@ public class Book implements Serializable {
 	private static transient BiMap<Integer, Book> BOOKS = HashBiMap.create(); // mapped from frameID to
 
 	private List<Material> inputConfig = new ArrayList<>(); // input sorting configure
+	private List<String> enchantments = new ArrayList<>();
+	private List<String> potions = new ArrayList<>();
 	private transient int frameID = -1;
 
 	private boolean strictMode;
@@ -55,16 +63,37 @@ public class Book implements Serializable {
 		return inputConfig.contains(material);
 	}
 
+	public boolean hasEnchantment(Set<Enchantment> enchantment) {
+		for (Enchantment ent : enchantment) {
+			if (enchantments.contains(ent.getKey().getKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean hasPotion(List<PotionEffect> potion) {
+		for (PotionEffect pot : potion) {
+			if (potions.contains(pot.getType().getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<String> toPages() {
 		List<String> pages = new ArrayList<>();
 
-		String path = "InputConfig";
+		// Material filtering
+		String path = "Materials";
 		FileConfiguration pageBuilder = new YamlConfiguration();
 		// tmp list for better formatting
 		List<String> tmp = new ArrayList<>();
 		for (Material material : this.inputConfig) {
 			tmp.add(getDisplayName(material));
 		}
+
+		// Advance options
 		pageBuilder.set("StrictMode", isStrictMode());
 		pageBuilder.set("PreventOverflow", hasPreventOverflow());
 		if (hasRatio()) {
@@ -73,6 +102,21 @@ public class Book implements Serializable {
 			pageBuilder.set("Ratio", "None");
 		}
 
+		// Enchantment filtering
+		pageBuilder.set(path, tmp);
+		tmp.clear();
+		path = "Enchantments";
+		for (String ent : enchantments) {
+			tmp.add(WordUtils.capitalizeFully(ent.replace("_", " ")));
+		}
+
+		// Potion filtering
+		pageBuilder.set(path, tmp);
+		tmp.clear();
+		path = "Potions";
+		for (String pot : potions) {
+			tmp.add(WordUtils.capitalizeFully(pot.replace("_", " ")));
+		}
 		pageBuilder.set(path, tmp);
 
 		List<String> inputConfigList = new ArrayList<>(Arrays.asList(pageBuilder.saveToString().split("\n")));
@@ -83,7 +127,7 @@ public class Book implements Serializable {
 			pages.add(page);
 		}
 
-		// preventing a book that's too big
+		// Preventing a book that's too big
 		if (pages.size() >= 50) {
 			String[] lastPage = pages.get(49).split("\n");
 			lastPage[lastPage.length - 1] = "...";
@@ -98,7 +142,14 @@ public class Book implements Serializable {
 		// filtering the items
 		if (!hasInputConfig(item.getType())) {
 			return false;
+		} else if (item.getItemMeta().hasEnchants() && enchantments.size() != 0
+				&& !hasEnchantment(item.getItemMeta().getEnchants().keySet())) {
+			return false;
+		} else if (item.getItemMeta() instanceof PotionMeta && ((PotionMeta) item.getItemMeta()).hasCustomEffects()
+				&& potions.size() != 0 && !hasPotion(((PotionMeta) item.getItemMeta()).getCustomEffects())) {
+			return false;
 		}
+
 		// prevents accepting an item if the next container in the system is full
 		if (hasPreventOverflow()) {
 			Block hopper = inventory.getLocation().getBlock();
@@ -144,27 +195,29 @@ public class Book implements Serializable {
 		this.inputConfig.add(material);
 	}
 
-	public void emptyInputConfig() {
-		this.inputConfig = new ArrayList<>();
+	public void addEnchantment(Enchantment enchantment) {
+		this.enchantments.add(enchantment.getKey().getKey());
 	}
 
-	public List<String> toItems() {
+	public void addPotion(PotionEffectType potion) {
+		this.potions.add(potion.getName());
+	}
+
+	public void emptyInputConfig() {
+		this.inputConfig.clear();
+		this.enchantments.clear();
+		this.potions.clear();
+	}
+
+	public HopperItems toItems() {
 		List<String> items = new ArrayList<>();
 		for (Material material : this.inputConfig) {
 			items.add(material.name().toLowerCase());
 		}
-		if (hasPreventOverflow()) {
-			items.add("prevent_overflow");
-		}
-		if (isStrictMode()) {
-			items.add("strict_mode");
-		}
-		if (hasRatio()) {
-			items.add("junction_ratio");
-			items.add(Integer.toString(ratio.getFirst()));
-			items.add(Integer.toString(ratio.getSecond()));
-		}
-		return items;
+		
+		HopperItems hopperItems = new HopperItems(items, enchantments, potions, isStrictMode(), hasPreventOverflow(), ratio);
+
+		return hopperItems;
 	}
 
 	/** Write the object to a Base64 string. */

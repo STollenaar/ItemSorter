@@ -21,13 +21,10 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffectType;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -39,6 +36,7 @@ import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 import tollenaar.stephen.ItemSorter.Util.Server.Book;
 import tollenaar.stephen.ItemSorter.Util.Web.Attributes;
+import tollenaar.stephen.ItemSorter.Util.Web.HopperItems;
 import tollenaar.stephen.ItemSorter.Util.Web.Image;
 import tollenaar.stephen.ItemSorter.Util.Web.Item;
 
@@ -91,18 +89,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 			}
 
-			List<Item> t = new ArrayList<>();
-			for (Enchantment ent : Enchantment.values()) {
-				t.add(new Item(ent.hashCode(), 1, ent.getKey().getKey(),
-						WordUtils.capitalizeFully(ent.getKey().getKey().replace("_", " "))));
-			}
-
-			List<Item> t2 = new ArrayList<>();
-			for (PotionEffectType ent : PotionEffectType.values()) {
-				t2.add(new Item(ent.hashCode(), 1, ent.getName(), WordUtils.capitalizeFully(ent.getName().replace("_"," " ))));
-			}
-
-			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp, t, t2);
+			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp);
 
 			reader.close();
 			jar.close();
@@ -182,6 +169,7 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
 						+ e.toString().replace("java.lang.", "") + ")");
 			}
@@ -196,7 +184,7 @@ public class ItemSorter extends JavaPlugin {
 				ctx.attribute("frameID", frameID);
 				ctx.attribute("attributes", attributes);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
-				ctx.attribute("checkItems", new ArrayList<String>());
+				ctx.attribute("checkItems", new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, null));
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					ctx.attribute("response", "You're not supposed to be here!!");
@@ -214,7 +202,7 @@ public class ItemSorter extends JavaPlugin {
 			try {
 				String user = ctx.queryParam("configData");
 				String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
-				List<String> checkItems = Book.fromString(bookValue).toItems();
+				HopperItems checkItems = Book.fromString(bookValue).toItems();
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
 				ctx.attribute("attributes", attributes);
