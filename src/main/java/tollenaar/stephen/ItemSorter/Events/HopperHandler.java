@@ -95,7 +95,9 @@ public class HopperHandler implements Listener {
 						frame = database.getSavedItemFrameByHopperID(hopperID, "id");
 						if (frame != null) {
 							book = Book.getBook(frame.getId());
-							book.reverseRatioStep();
+							if (book.hasRatio()) {
+								book.reverseRatioStep();
+							}
 						}
 					}
 				} else if (!junctionCancelled) {

@@ -3,9 +3,12 @@ package tollenaar.stephen.ItemSorter.Util.Server;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -54,15 +57,18 @@ public class Book implements Serializable {
 		this.addSelf(frameID);
 	}
 
+	// adding to an item frame
 	public void addSelf(int frameID) {
 		this.frameID = frameID;
 		BOOKS.put(frameID, this);
 	}
 
+	// check if the item is of the correct material
 	public boolean hasInputConfig(Material material) {
 		return inputConfig.contains(material);
 	}
 
+	// checking if the item has the correct enchantment
 	public boolean hasEnchantment(Set<Enchantment> enchantment) {
 		for (Enchantment ent : enchantment) {
 			if (enchantments.contains(ent.getKey().getKey())) {
@@ -72,6 +78,7 @@ public class Book implements Serializable {
 		return false;
 	}
 
+	// checking if the item has the correct potion effect
 	public boolean hasPotion(List<PotionEffect> potion) {
 		for (PotionEffect pot : potion) {
 			if (potions.contains(pot.getType().getName())) {
@@ -85,17 +92,22 @@ public class Book implements Serializable {
 		List<String> pages = new ArrayList<>();
 
 		// Material filtering
-		String path = "Materials";
+		String pathMaterials = "Material Filter";
+		String pathEnchantments = "Enchantment Filter";
+		String pathPotions = "Potion Filter";
+
 		FileConfiguration pageBuilder = new YamlConfiguration();
 		// tmp list for better formatting
-		List<String> tmp = new ArrayList<>();
+		List<String> tmpMaterial = new ArrayList<>();
+		List<String> tmpEnchantment = new ArrayList<>();
+		List<String> tmpPotion = new ArrayList<>();
 		for (Material material : this.inputConfig) {
-			tmp.add(getDisplayName(material));
+			tmpMaterial.add(getDisplayName(material));
 		}
 
 		// Advance options
-		pageBuilder.set("StrictMode", isStrictMode());
-		pageBuilder.set("PreventOverflow", hasPreventOverflow());
+		pageBuilder.set("Strict Mode", isStrictMode());
+		pageBuilder.set("Prevent Overflow", hasPreventOverflow());
 		if (hasRatio()) {
 			pageBuilder.set("Ratio", ratio.getFirst() + " To " + ratio.getSecond());
 		} else {
@@ -103,27 +115,37 @@ public class Book implements Serializable {
 		}
 
 		// Enchantment filtering
-		pageBuilder.set(path, tmp);
-		tmp.clear();
-		path = "Enchantments";
 		for (String ent : enchantments) {
-			tmp.add(WordUtils.capitalizeFully(ent.replace("_", " ")));
+			tmpEnchantment.add(WordUtils.capitalizeFully(ent.replace("_", " ")));
 		}
 
 		// Potion filtering
-		pageBuilder.set(path, tmp);
-		tmp.clear();
-		path = "Potions";
 		for (String pot : potions) {
-			tmp.add(WordUtils.capitalizeFully(pot.replace("_", " ")));
+			tmpPotion.add(WordUtils.capitalizeFully(pot.replace("_", " ")));
 		}
-		pageBuilder.set(path, tmp);
 
+		// setting the pageBuilder
+		pageBuilder.set(pathMaterials, tmpMaterial);
+		if (tmpEnchantment.size() != 0) {
+			pageBuilder.set(pathEnchantments, tmpEnchantment);
+		} else {
+			pageBuilder.set(pathEnchantments, "None");
+		}
+		if (tmpPotion.size() != 0) {
+			pageBuilder.set(pathPotions, tmpPotion);
+		} else {
+			pageBuilder.set(pathPotions, "None");
+		}
+
+		// fitting the max amount of lines per page
 		List<String> inputConfigList = new ArrayList<>(Arrays.asList(pageBuilder.saveToString().split("\n")));
-		for (int i = 0; i < inputConfigList.size(); i += 14) {
-			int maxSub = Math.min(inputConfigList.size() - i, 13);
+		for (int i = 0; i < inputConfigList.size(); i += 13) {
+			int maxSub = Math.min(inputConfigList.size() - i, 12);
 			String page = inputConfigList.subList(i, i + maxSub).toString().replace("]", "").replace("[", "")
 					.replace(", ", "\n");
+			if (maxSub == 12) {
+				i--;
+			}
 			pages.add(page);
 		}
 
@@ -214,8 +236,9 @@ public class Book implements Serializable {
 		for (Material material : this.inputConfig) {
 			items.add(material.name().toLowerCase());
 		}
-		
-		HopperItems hopperItems = new HopperItems(items, enchantments, potions, isStrictMode(), hasPreventOverflow(), ratio);
+
+		HopperItems hopperItems = new HopperItems(items, enchantments, potions, isStrictMode(), hasPreventOverflow(),
+				ratio);
 
 		return hopperItems;
 	}
@@ -270,12 +293,24 @@ public class Book implements Serializable {
 		this.ratio.reverseCount();
 	}
 
+	// in case of a legacy load from string
+	public void checkSelf() {
+		if (this.inputConfig == null) {
+			this.inputConfig = new ArrayList<>();
+		}
+		if (this.enchantments == null) {
+			this.enchantments = new ArrayList<>();
+		}
+		if (this.potions == null) {
+			this.potions = new ArrayList<>();
+		}
+	}
+
 	public static Book getBook(int frameID) {
 		return BOOKS.get(frameID);
 	}
 
 	public static Book getBook(String bookvalue) {
-		System.out.println(BOOKS + " " + bookvalue);
 		for (Book book : BOOKS.values()) {
 			if (book.toString().equals(bookvalue)) {
 				return book;
@@ -302,9 +337,54 @@ public class Book implements Serializable {
 	public static Book fromString(String s) throws IOException, ClassNotFoundException {
 		byte[] data = Base64.getDecoder().decode(s);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-		Object o = ois.readObject();
-		ois.close();
+		Object o;
+		try {
+			o = ois.readObject();
+			ois.close();
+
+		} catch (ClassNotFoundException e) {
+			ois.close();
+			LegacyObjectInputStream lois = new LegacyObjectInputStream(new ByteArrayInputStream(data),
+					"tollenaar.stephen.ItemSorter.Util.Book", "tollenaar.stephen.ItemSorter.Util.Server.Book");
+			o = lois.readObject();
+			lois.close();
+			((Book) o).checkSelf();
+		}
 		return (Book) o;
 	}
+}
 
+class LegacyObjectInputStream extends ObjectInputStream {
+	private final String oldNameSpace;
+	private final String newNameSpace;
+
+	public LegacyObjectInputStream(InputStream in, String oldNameSpace, String newNameSpace) throws IOException {
+		super(in);
+		this.oldNameSpace = oldNameSpace;
+		this.newNameSpace = newNameSpace;
+	}
+
+	@Override
+	protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+		ObjectStreamClass result = super.readClassDescriptor();
+		try {
+			if (result.getName().contains(oldNameSpace)) {
+				String newClassName = result.getName().replace(oldNameSpace, newNameSpace);
+				// Test the class exists
+				Class<?> localClass = Class.forName(newClassName);
+
+				Field nameField = ObjectStreamClass.class.getDeclaredField("name");
+				nameField.setAccessible(true);
+				nameField.set(result, newClassName);
+
+				ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
+				Field suidField = ObjectStreamClass.class.getDeclaredField("suid");
+				suidField.setAccessible(true);
+				suidField.set(result, localClassDescriptor.getSerialVersionUID());
+			}
+		} catch (Exception e) {
+			throw new IOException("Exception when trying to replace namespace", e);
+		}
+		return result;
+	}
 }

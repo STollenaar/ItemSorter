@@ -104,7 +104,7 @@ public class HopperInteractHandler implements Listener {
 					meta.spigot().addPage(editPage);
 					replaceItem.setItemMeta(meta);
 					player.openBook(replaceItem);
-					
+
 					database.savePlayer(player.getUniqueId(), book.toString(), true, null);
 					event.setCancelled(true);
 				} catch (ClassNotFoundException | IOException e) {
@@ -169,7 +169,8 @@ public class HopperInteractHandler implements Listener {
 
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
-		if (event.getItem().getType() == Material.WRITTEN_BOOK && event.getItem().getItemMeta().hasLore()) {
+		if (event.hasItem() && event.getItem().getType() == Material.WRITTEN_BOOK
+				&& event.getItem().getItemMeta().hasLore()) {
 			try {
 				ItemStack item = event.getItem();
 				Player player = event.getPlayer();
