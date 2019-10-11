@@ -1,4 +1,4 @@
-package tollenaar.stephen.ItemSorter.Util;
+package tollenaar.stephen.ItemSorter.Util.Server;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,7 +27,6 @@ public class Frame {
 		this(rs.getInt("id"), rs.getInt("hopper_id"), rs.getDouble("frameX"), rs.getDouble("frameY"),
 				rs.getDouble("frameZ"), rs.getFloat("frameYaw"), rs.getFloat("framePitch"), rs.getString("frameWorld"));
 	}
-	
 
 	public Frame(int id, int hopperID, double x, double y, double z, float yaw, float pitch, String world) {
 		this.id = id;
@@ -101,7 +100,7 @@ public class Frame {
 	public void setPitch(float pitch) {
 		this.pitch = pitch;
 	}
-	
+
 	public Location getLocation() {
 		return new Location(Bukkit.getWorld(getWorld()), getX(), getY(), getZ(), getYaw(), getPitch());
 	}
@@ -131,10 +130,12 @@ public class Frame {
 
 	public ItemFrame getEntityFrame() {
 		Location frameLoc = new Location(Bukkit.getWorld(world), x, y, z, yaw, pitch);
-		for (Entity ent : frameLoc.getChunk().getEntities()) {
-			// getting the right item frame
-			if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
-				return (ItemFrame) ent;
+		if (frameLoc.getWorld() != null) {
+			for (Entity ent : frameLoc.getChunk().getEntities()) {
+				// getting the right item frame
+				if (ent instanceof ItemFrame && ent.getLocation().equals(frameLoc)) {
+					return (ItemFrame) ent;
+				}
 			}
 		}
 		return null;

@@ -31,7 +31,7 @@ function changeInput(evt, id) {
     }
 }
 
-//for the inout where you type
+//for the input where you type
 function changeInputKey(evt, id) {
     if (document.getElementById('firstRatio').value > 0 && document.getElementById('secondRatio').value > 0) {
         if (!evt.currentTarget.parentElement.className.includes('active')) {
@@ -41,5 +41,21 @@ function changeInputKey(evt, id) {
     } else {
         evt.currentTarget.parentElement.className = evt.currentTarget.parentElement.className.replace('active', " ");
         document.getElementById('Ijunction_ratio').removeAttribute('checked');
+    }
+}
+
+let enchantments = 0;
+
+function changeInputButton(evt, id) {
+    if (document.getElementById(id).checked) {
+        enchantments--;
+    } else {
+        enchantments++;
+    }
+
+    if (enchantments == 0) {
+        evt.currentTarget.parentElement.className = evt.currentTarget.parentElement.className.replace('active', '');
+    } else {
+        evt.currentTarget.parentElement.className += ' active';
     }
 }

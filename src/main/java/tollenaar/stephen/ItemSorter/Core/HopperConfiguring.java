@@ -10,14 +10,17 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.potion.PotionEffectType;
 
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.EditConfig;
-import tollenaar.stephen.ItemSorter.Util.Frame;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.EditConfig;
+import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 
 public class HopperConfiguring {
 	private Database database;
@@ -42,6 +45,10 @@ public class HopperConfiguring {
 			String value = formParams.get(key).get(0);
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
+			} else if (key.contains("enchantment_") && Enchantment.getByKey(NamespacedKey.minecraft(value)) != null) {
+				book.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(value)));
+			} else if (key.contains("potion_") && PotionEffectType.getByName(value) != null) {
+				book.addPotion(PotionEffectType.getByName(value));
 			}
 		}
 		if (formParams.keySet().contains("strict_mode")) {
@@ -102,6 +109,10 @@ public class HopperConfiguring {
 			String value = formParams.get(key).get(0);
 			if (key.contains("input_") && Material.matchMaterial(value) != null) {
 				book.addInputConfig(Material.matchMaterial(value));
+			} else if (key.contains("enchantment_") && Enchantment.getByKey(NamespacedKey.minecraft(value)) != null) {
+				book.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(value)));
+			} else if (key.contains("potion_") && PotionEffectType.getByName(value) != null) {
+				book.addPotion(PotionEffectType.getByName(value));
 			}
 		}
 		if (formParams.keySet().contains("strict_mode")) {

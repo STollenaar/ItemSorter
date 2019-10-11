@@ -36,13 +36,13 @@ h3 {
     border: none;
 }
 
-#content {
+.content {
     text-align: center;
     vertical-align: middle;
     display: table-row;
 }
 
-#side {
+.side {
     display: table-cell;
     vertical-align: top;
     margin-top: 15px;

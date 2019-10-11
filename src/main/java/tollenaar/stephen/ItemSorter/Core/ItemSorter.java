@@ -34,9 +34,11 @@ import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.Image;
-import tollenaar.stephen.ItemSorter.Util.Item;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Web.Attributes;
+import tollenaar.stephen.ItemSorter.Util.Web.HopperItems;
+import tollenaar.stephen.ItemSorter.Util.Web.Image;
+import tollenaar.stephen.ItemSorter.Util.Web.Item;
 
 public class ItemSorter extends JavaPlugin {
 
@@ -44,8 +46,7 @@ public class ItemSorter extends JavaPlugin {
 	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
 	private static Javalin app;
-	private static List<Item> minecraftItems;
-	private static List<Image> containers = new ArrayList<>();
+	private static Attributes attributes;
 
 	@Override
 	public void onEnable() {
@@ -62,7 +63,7 @@ public class ItemSorter extends JavaPlugin {
 		pm.registerEvents(new HopperHandler(database), this);
 
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
-		
+
 		try {
 			// getting all the items in minecraft and processing them into a
 			// java object
@@ -73,21 +74,24 @@ public class ItemSorter extends JavaPlugin {
 
 			Type ITEM_TYPE = new TypeToken<List<Item>>() {
 			}.getType();
+
 			Gson gson = new Gson();
 
 			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
-			minecraftItems = gson.fromJson(reader, ITEM_TYPE);
-			reader.close();
 
 			Enumeration<? extends ZipEntry> entries = jar.entries();
 
+			List<Image> tmp = new ArrayList<>();
 			while (entries.hasMoreElements()) {
 				ZipEntry en = entries.nextElement();
 				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
-					containers.add(new Image(en.getName().replace("web/", ""),  loadImage(jar.getInputStream(en))));
+					tmp.add(new Image(en.getName().replace("web/", ""), loadImage(jar.getInputStream(en))));
 				}
 			}
 
+			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp);
+
+			reader.close();
 			jar.close();
 		} catch (IOException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
@@ -165,8 +169,9 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				e.printStackTrace();
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -177,10 +182,9 @@ public class ItemSorter extends JavaPlugin {
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
 				ctx.attribute("userCode", userCode);
 				ctx.attribute("frameID", frameID);
-				ctx.attribute("containers", containers);
+				ctx.attribute("attributes", attributes);
 				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
-				ctx.attribute("items", minecraftItems);
-				ctx.attribute("checkItems", new ArrayList<String>());
+				ctx.attribute("checkItems", new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, null));
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
 					ctx.attribute("response", "You're not supposed to be here!!");
@@ -198,12 +202,11 @@ public class ItemSorter extends JavaPlugin {
 			try {
 				String user = ctx.queryParam("configData");
 				String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
-				List<String> checkItems = Book.fromString(bookValue).toItems();
+				HopperItems checkItems = Book.fromString(bookValue).toItems();
 				ctx.attribute("bookValue", bookValue);
 				ctx.attribute("userCode", user);
-				ctx.attribute("containers", containers);
+				ctx.attribute("attributes", attributes);
 				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
-				ctx.attribute("items", minecraftItems);
 				ctx.attribute("checkItems", checkItems);
 				ctx.render("/web/index.html");
 				if (!database.hasSavedPlayer(UUID.fromString(user))) {
@@ -212,8 +215,8 @@ public class ItemSorter extends JavaPlugin {
 				}
 
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 				ctx.render("/web/response.html");
 			}
 
@@ -235,8 +238,8 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
-				ctx.attribute("response",
-						"Internal server error while posting your configuration set up. (" + e.toString().replace("java.lang.", "") + ")");
+				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+						+ e.toString().replace("java.lang.", "") + ")");
 			}
 			ctx.render("/web/response.html");
 		});
@@ -250,16 +253,16 @@ public class ItemSorter extends JavaPlugin {
 	public Database getDatabase() {
 		return database;
 	}
-	
-	private  BufferedImage loadImage(InputStream file){
-	    BufferedImage buff = null;
-	    try {
-	        buff = ImageIO.read(file);
-	    } catch (IOException e) {
-	    	Bukkit.getLogger().log(Level.SEVERE, e.toString());
-	        return null;
-	    }
-	    return buff;
+
+	private BufferedImage loadImage(InputStream file) {
+		BufferedImage buff = null;
+		try {
+			buff = ImageIO.read(file);
+		} catch (IOException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+			return null;
+		}
+		return buff;
 
 	}
 }

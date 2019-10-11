@@ -26,10 +26,10 @@ import com.google.common.collect.HashBiMap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.EditConfig;
-import tollenaar.stephen.ItemSorter.Util.Frame;
-import tollenaar.stephen.ItemSorter.Util.Hopper;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.EditConfig;
+import tollenaar.stephen.ItemSorter.Util.Server.Frame;
+import tollenaar.stephen.ItemSorter.Util.Server.Hopper;
 
 public class Database {
 

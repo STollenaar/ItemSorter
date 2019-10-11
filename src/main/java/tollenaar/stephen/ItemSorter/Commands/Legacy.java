@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
-import tollenaar.stephen.ItemSorter.Util.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
 
 public class Legacy extends SubCommand {
 

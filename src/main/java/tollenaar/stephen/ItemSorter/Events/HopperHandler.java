@@ -1,5 +1,6 @@
 package tollenaar.stephen.ItemSorter.Events;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
@@ -10,9 +11,9 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 
 import tollenaar.stephen.ItemSorter.Core.Database;
-import tollenaar.stephen.ItemSorter.Util.Book;
-import tollenaar.stephen.ItemSorter.Util.Frame;
-import tollenaar.stephen.ItemSorter.Util.Hopper;
+import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.Frame;
+import tollenaar.stephen.ItemSorter.Util.Server.Hopper;
 
 public class HopperHandler implements Listener {
 
@@ -27,7 +28,8 @@ public class HopperHandler implements Listener {
 		boolean junctionCancelled = false;
 
 		// flattening in case of multiple items in the same hopper inventory slot
-		if (event.getSource().getType() == InventoryType.HOPPER) {
+		if (event.getSource().getType() == InventoryType.HOPPER
+				&& event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
 			Block hopper = event.getSource().getLocation().getBlock();
 			if (Hopper.isJunction(hopper)
 					&& !event.getDestination().getLocation().equals(hopper.getRelative(BlockFace.DOWN).getLocation())
@@ -51,6 +53,7 @@ public class HopperHandler implements Listener {
 
 		// checking the source and seeing if it has to abide by any ratio rules
 		if (event.getSource().getType() == InventoryType.HOPPER
+				&& event.getSource().getLocation().getBlock().getType() == Material.HOPPER
 				&& database.hasSavedHopper(event.getSource().getLocation()))
 
 		{
@@ -75,6 +78,7 @@ public class HopperHandler implements Listener {
 
 		// standard item filtering
 		if (event.getDestination().getType() == InventoryType.HOPPER
+				&& event.getDestination().getLocation().getBlock().getType() == Material.HOPPER
 				&& database.hasSavedHopper(event.getDestination().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
 
@@ -86,12 +90,14 @@ public class HopperHandler implements Listener {
 					event.setCancelled(true);
 					if (!junctionCancelled) {
 						// reversing the step of the ratio
-						hopperID = (int) database.getSavedHopperByLocation(event.getSource().getLocation(), "id");
+						hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
 
 						frame = database.getSavedItemFrameByHopperID(hopperID, "id");
 						if (frame != null) {
 							book = Book.getBook(frame.getId());
-							book.reverseRatioStep();
+							if (book.hasRatio()) {
+								book.reverseRatioStep();
+							}
 						}
 					}
 				} else if (!junctionCancelled) {
