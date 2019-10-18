@@ -7,7 +7,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 
 import tollenaar.stephen.ItemSorter.Core.Database;
@@ -28,8 +27,7 @@ public class HopperHandler implements Listener {
 		boolean junctionCancelled = false;
 
 		// flattening in case of multiple items in the same hopper inventory slot
-		if (event.getSource().getType() == InventoryType.HOPPER
-				&& event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
+		if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
 			Block hopper = event.getSource().getLocation().getBlock();
 			if (Hopper.isJunction(hopper)
 					&& !event.getDestination().getLocation().equals(hopper.getRelative(BlockFace.DOWN).getLocation())
@@ -52,8 +50,7 @@ public class HopperHandler implements Listener {
 		}
 
 		// checking the source and seeing if it has to abide by any ratio rules
-		if (event.getSource().getType() == InventoryType.HOPPER
-				&& event.getSource().getLocation().getBlock().getType() == Material.HOPPER
+		if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER
 				&& database.hasSavedHopper(event.getSource().getLocation()))
 
 		{
@@ -77,8 +74,7 @@ public class HopperHandler implements Listener {
 		}
 
 		// standard item filtering
-		if (event.getDestination().getType() == InventoryType.HOPPER
-				&& event.getDestination().getLocation().getBlock().getType() == Material.HOPPER
+		if (event.getDestination().getLocation().getBlock().getType() == Material.HOPPER
 				&& database.hasSavedHopper(event.getDestination().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
 
@@ -112,7 +108,7 @@ public class HopperHandler implements Listener {
 	// this checks if the hopper can pick up an item and is not in strict mode.
 	@EventHandler
 	public void onHopperPickUpEvent(InventoryPickupItemEvent event) {
-		if (event.getInventory().getType() == InventoryType.HOPPER
+		if (event.getInventory().getLocation().getBlock().getType() == Material.HOPPER
 				&& database.hasSavedHopper(event.getInventory().getLocation())) {
 			int hopperID = (int) database.getSavedHopperByLocation(event.getInventory().getLocation(), "id");
 

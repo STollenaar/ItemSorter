@@ -71,6 +71,9 @@ public class Book implements Serializable {
 	// checking if the item has the correct enchantment
 	public boolean hasEnchantment(Set<Enchantment> enchantment) {
 		for (Enchantment ent : enchantment) {
+			if (isStrictMode() && !enchantments.contains(ent.getKey().getKey())) {
+				return false;
+			}
 			if (enchantments.contains(ent.getKey().getKey())) {
 				return true;
 			}
@@ -162,7 +165,7 @@ public class Book implements Serializable {
 
 	public boolean allowItem(Inventory inventory, ItemStack item) {
 		// filtering the items
-		if (!hasInputConfig(item.getType())) {
+		if (inputConfig.size() != 0 && !hasInputConfig(item.getType())) {
 			return false;
 		} else if (item.getItemMeta().hasEnchants() && enchantments.size() != 0
 				&& !hasEnchantment(item.getItemMeta().getEnchants().keySet())) {
