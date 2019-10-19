@@ -686,6 +686,7 @@ public class Database {
 		loadHoppers();
 		plugin.getLogger().log(Level.INFO, "Checking Version.");
 		loadVersion();
+		plugin.getLogger().log(Level.INFO, "Done Loading");
 	}
 
 	public void initialize() {

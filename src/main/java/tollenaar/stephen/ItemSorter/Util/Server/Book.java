@@ -349,7 +349,12 @@ public class Book implements Serializable {
 			ois.close();
 			LegacyObjectInputStream lois = new LegacyObjectInputStream(new ByteArrayInputStream(data),
 					"tollenaar.stephen.ItemSorter.Util.Book", "tollenaar.stephen.ItemSorter.Util.Server.Book");
-			o = lois.readObject();
+			try {
+				o = lois.readObject();
+			} catch (IOException ex) {
+				lois.close();
+				return null;
+			}
 			lois.close();
 			((Book) o).checkSelf();
 		}

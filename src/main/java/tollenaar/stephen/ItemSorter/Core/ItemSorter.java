@@ -23,7 +23,6 @@ import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.gson.Gson;
@@ -35,6 +34,7 @@ import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
 import tollenaar.stephen.ItemSorter.Util.Server.Book;
+import tollenaar.stephen.ItemSorter.Util.Server.EventExceptionHandler;
 import tollenaar.stephen.ItemSorter.Util.Web.Attributes;
 import tollenaar.stephen.ItemSorter.Util.Web.HopperItems;
 import tollenaar.stephen.ItemSorter.Util.Web.Image;
@@ -58,10 +58,9 @@ public class ItemSorter extends JavaPlugin {
 		hopperConfig = new HopperConfiguring(this);
 
 		// registering events
-		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvents(new HopperInteractHandler(this), this);
-		pm.registerEvents(new HopperHandler(database), this);
-
+		EventExceptionHandler.registerEvents(new HopperInteractHandler(this), this, new EventExceptionHandler(this));
+		EventExceptionHandler.registerEvents(new HopperHandler(database), this, new EventExceptionHandler(this));
+		
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
 
 		try {
