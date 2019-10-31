@@ -180,8 +180,8 @@ public class Book implements Serializable {
 			Block hopper = inventory.getLocation().getBlock();
 			BlockFace facing = ((Hopper) hopper.getBlockData()).getFacing();
 			Block target = hopper.getRelative(facing);
-			if (target instanceof Container) {
-				Container t = (Container) target;
+			if (target.getState() instanceof Container) {
+				Container t = (Container) target.getState();
 				if (!hasRoom(t.getInventory(), item)) {
 					return false;
 				}
