@@ -41,7 +41,7 @@ public class HopperHandler implements Listener {
 					// checking the configuration
 					if (book != null && book.allowItem(
 							((InventoryHolder) hopper.getRelative(BlockFace.DOWN).getState()).getInventory(),
-							event.getItem()) && !((org.bukkit.block.data.type.Hopper) hopper.getBlockData()).isEnabled()) {
+							event.getItem()) && !((org.bukkit.block.data.type.Hopper) hopper).isEnabled()) {
 						event.setCancelled(true);
 						return;
 					}

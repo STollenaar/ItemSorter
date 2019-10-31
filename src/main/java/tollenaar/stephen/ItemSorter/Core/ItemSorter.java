@@ -47,6 +47,7 @@ public class ItemSorter extends JavaPlugin {
 	private FileConfiguration config;
 	private static Javalin app;
 	private static Attributes attributes;
+	private EventExceptionHandler handler;
 
 	@Override
 	public void onEnable() {
@@ -54,12 +55,13 @@ public class ItemSorter extends JavaPlugin {
 		config.options().copyDefaults(true);
 		saveConfig();
 
+		handler  = new EventExceptionHandler(this);
 		database = new Database(this);
 		hopperConfig = new HopperConfiguring(this);
 
 		// registering events
-		EventExceptionHandler.registerEvents(new HopperInteractHandler(this), this, new EventExceptionHandler(this));
-		EventExceptionHandler.registerEvents(new HopperHandler(database), this, new EventExceptionHandler(this));
+		EventExceptionHandler.registerEvents(new HopperInteractHandler(this), this, handler);
+		EventExceptionHandler.registerEvents(new HopperHandler(database), this, handler);
 		
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
 

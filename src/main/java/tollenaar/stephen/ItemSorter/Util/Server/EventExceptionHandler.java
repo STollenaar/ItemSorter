@@ -18,10 +18,14 @@ import org.apache.commons.lang.Validate;
 import com.google.common.collect.Lists;
 
 public class EventExceptionHandler {
-	private final JavaPlugin plugin;
+	private JavaPlugin plugin;
+	private Date date;
 
 	public EventExceptionHandler(JavaPlugin plugin) {
 		this.plugin = plugin;
+		if(this.date == null) {
+			this.date = new Date();
+		}
 	}
 
 	// For wrapping a registered listener
@@ -164,7 +168,8 @@ public class EventExceptionHandler {
 	 *         rethrow it.
 	 */
 	public boolean handle(Throwable ex, Event event) {
-		if (plugin.getConfig().getBoolean("verboseLogging")) {
+		if (plugin.getConfig().getBoolean("verboseLogging")
+				&& new Date().getTime() - this.date.getTime() >= 20*60*1000) {
 			plugin.getLogger().log(Level.SEVERE, "Error " + ex.getMessage() + " occured and has been logged");
 		}
 
