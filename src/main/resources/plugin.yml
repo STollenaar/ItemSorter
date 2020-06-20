@@ -2,8 +2,9 @@ name: ItemSorter
 main: tollenaar.stephen.ItemSorter.Core.ItemSorter
 version: 0.01
 authors: [guitargun]
+loadbefore: [Storefront]
 description: able to sort items in a better way using hoppers
-api-version: 1.14
+api-version: 1.15
 commands: 
      ItemSorter:
              description: various commands exists with this plugin

@@ -45,7 +45,7 @@ public class ItemSorter extends JavaPlugin {
 	private Database database;
 	private HopperConfiguring hopperConfig;
 	private FileConfiguration config;
-	private static Javalin app;
+	private static Javalin appItem;
 	private static Attributes attributes;
 	private EventExceptionHandler handler;
 
@@ -119,9 +119,9 @@ public class ItemSorter extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		try {
-			app.stop();
+			appItem.stop();
 		} catch (Exception e) {
-			Bukkit.getLogger().log(Level.SEVERE, "App stopped with errors");
+			Bukkit.getLogger().log(Level.SEVERE, "appItem stopped with errors");
 		}
 	}
 
@@ -143,18 +143,19 @@ public class ItemSorter extends JavaPlugin {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
-		app = Javalin.create(config -> {
-			config.addStaticFiles("/web");
+		appItem = Javalin.create(config -> {
+			config.addStaticFiles("web");
 			config.showJavalinBanner = false;
 			config.requestCacheSize = 30000L;
 		}).start(config.getInt("port"));
-		appInitalize();
+
+		appItemInitalize();
 
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
-	private void appInitalize() {
-		app.post("/" + config.getString("postConfigResponse"), ctx -> {
+	private void appItemInitalize() {
+		appItem.post("/" + config.getString("postConfigResponse"), ctx -> {
 			try {
 				String userCode = ctx.formParam("userCode");
 				int frameID = Integer.parseInt(ctx.formParam("frameID"));
@@ -177,7 +178,7 @@ public class ItemSorter extends JavaPlugin {
 			ctx.render("/web/response.html");
 		});
 
-		app.get("/" + config.getString("initialPageResponse"), ctx -> {
+		appItem.get("/" + config.getString("initialPageResponse"), ctx -> {
 			try {
 				String userCode = ctx.queryParam("userCode");
 				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
@@ -199,7 +200,7 @@ public class ItemSorter extends JavaPlugin {
 
 		});
 
-		app.get("/" + config.getString("editPageResponse"), ctx -> {
+		appItem.get("/" + config.getString("editPageResponse"), ctx -> {
 			try {
 				String user = ctx.queryParam("configData");
 				String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
@@ -223,7 +224,7 @@ public class ItemSorter extends JavaPlugin {
 
 		});
 
-		app.post("/" + config.getString("postEditPageResponse"), ctx -> {
+		appItem.post("/" + config.getString("postEditPageResponse"), ctx -> {
 			try {
 				String bookValue = ctx.formParam("bookValue");
 				String userCode = ctx.formParam("userCode");
@@ -245,7 +246,7 @@ public class ItemSorter extends JavaPlugin {
 			ctx.render("/web/response.html");
 		});
 
-		app.get("/", ctx -> {
+		appItem.get("/", ctx -> {
 			ctx.attribute("response", "You're not supposed to be here!!");
 			ctx.render("/web/response.html");
 		});
