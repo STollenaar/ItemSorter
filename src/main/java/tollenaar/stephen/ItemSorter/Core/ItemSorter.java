@@ -21,6 +21,7 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -71,28 +72,19 @@ public class ItemSorter extends JavaPlugin {
 			File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
 			File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
 			ZipFile jar = new ZipFile(plugin);
-			ZipEntry entry = jar.getEntry("web/items.json");
-
-			Type ITEM_TYPE = new TypeToken<List<Item>>() {
-			}.getType();
-
-			Gson gson = new Gson();
-
-			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
 
 			Enumeration<? extends ZipEntry> entries = jar.entries();
 
-			List<Image> tmp = new ArrayList<>();
+			List<Item> tmp = new ArrayList<>();
 			while (entries.hasMoreElements()) {
 				ZipEntry en = entries.nextElement();
 				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
-					tmp.add(new Image(en.getName().replace("web/", ""), loadImage(jar.getInputStream(en))));
+					String name = en.getName().replace("web/images/block", "").replace(".png", "");
+					tmp.add(new Item(en.hashCode(), 64, name, WordUtils.capitalizeFully(name.toLowerCase().replace("_", " "))));
 				}
 			}
 
-			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp);
-
-			reader.close();
+			attributes = new Attributes(tmp, new ArrayList<>());
 			jar.close();
 		} catch (IOException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
