@@ -209,6 +209,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
 						+ e.toString().replace("java.lang.", "") + ")");
 				ctx.render("/web/response.html");
@@ -232,6 +233,7 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
 						+ e.toString().replace("java.lang.", "") + ")");
 			}

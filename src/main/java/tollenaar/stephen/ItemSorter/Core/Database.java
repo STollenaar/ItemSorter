@@ -9,16 +9,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -36,7 +40,7 @@ public class Database {
 	private ItemSorter plugin;
 	private Connection connection;
 
-	private static final String VERSION = "1.3";
+	private static final String VERSION = "1.4";
 	private static BiMap<UUID, EditConfig> editConfigs = HashBiMap.create();
 
 	public Database(ItemSorter plugin) {
@@ -551,12 +555,14 @@ public class Database {
 			pst = getConnection().prepareStatement("SELECT * FROM `Frames`;");
 
 			ResultSet rs = pst.executeQuery();
+			NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
 			while (rs.next()) {
 				Frame frame = new Frame(rs);
 				ItemFrame fr = frame.getEntityFrame();
-				if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK
-						&& fr.getItem().getItemMeta().hasLore()) {
-					Book book = Book.fromString(fr.getItem().getItemMeta().getLore().get(0).replace("§", ""));
+				if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK && fr.getItem().getItemMeta()
+						.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
+					Book book = Book.fromString(fr.getItem().getItemMeta().getPersistentDataContainer().get(key,
+							PersistentDataType.STRING));
 					book.addSelf(frame.getId());
 				}
 			}
@@ -641,6 +647,40 @@ public class Database {
 						ps = getConnection().prepareStatement("DROP TABLE EditUserConfigs;");
 						ps.execute();
 					} catch (SQLException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
+					} finally {
+						try {
+							if (ps != null) {
+								ps.close();
+							}
+						} catch (SQLException e) {
+							Bukkit.getLogger().log(Level.SEVERE, e.toString());
+						}
+					}
+				} else if (rs.getString("version").contentEquals("1.3")) {
+					plugin.getLogger().log(Level.WARNING,
+							"Old non supported version detected, removing current editing configs. This can take a while!");
+					PreparedStatement ps = null;
+					try {
+						ps = getConnection().prepareStatement("SELECT * FROM `Frames`;");
+
+						ResultSet r = ps.executeQuery();
+						NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+						while (r.next()) {
+							Frame frame = new Frame(r);
+							ItemFrame fr = frame.getEntityFrame();
+							if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK
+									&& fr.getItem().getItemMeta().hasLore()) {
+								ItemMeta meta = fr.getItem().getItemMeta();
+								Book book = Book.fromString(meta.getLore().get(0).replace("§", ""));
+								meta.setLore(new ArrayList<>());
+								meta.getPersistentDataContainer().set(key,
+										PersistentDataType.STRING, book.toString());
+								fr.getItem().setItemMeta(meta);
+							}
+						}
+
+					} catch (SQLException | ClassNotFoundException | IOException e) {
 						Bukkit.getLogger().log(Level.SEVERE, e.toString());
 					} finally {
 						try {

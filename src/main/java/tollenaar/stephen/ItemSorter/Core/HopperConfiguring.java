@@ -2,13 +2,11 @@ package tollenaar.stephen.ItemSorter.Core;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -16,6 +14,7 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 
 import tollenaar.stephen.ItemSorter.Util.Server.Book;
@@ -24,8 +23,10 @@ import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 
 public class HopperConfiguring {
 	private Database database;
+	private ItemSorter plugin;
 
 	public HopperConfiguring(ItemSorter plugin) {
+		this.plugin = plugin;
 		this.database = plugin.getDatabase();
 	}
 
@@ -74,20 +75,16 @@ public class HopperConfiguring {
 			book.emptyRatio();
 		}
 
-		// serializing the book and saving as lore
-		String bookValue = book.toString();
-		List<String> loreList = new ArrayList<>();
-		// hidden value
-		loreList.add(convertToInvisibleString(bookValue));
 		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setTitle("HopperConfiguration");
 		meta.setAuthor("ItemSorter");
-		meta.setLore(loreList);
 
 		meta.setPages(book.toPages());
 
 		// changing the item frame item
+		NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+		meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
 		replaceItem.setItemMeta(meta);
 		fr.setItem(replaceItem);
 	}
@@ -138,26 +135,27 @@ public class HopperConfiguring {
 			book.emptyRatio();
 		}
 
-		// serializing the book and saving as lore
-		String bookValueNew = book.toString();
-		List<String> loreList = new ArrayList<>();
-		// hidden value
-		loreList.add(convertToInvisibleString(bookValueNew));
 		ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
 
 		BookMeta meta = (BookMeta) replaceItem.getItemMeta();
 		meta.setTitle("HopperConfiguration");
 		meta.setAuthor("ItemSorter");
-		meta.setLore(loreList);
+
+		// changing the item frame item
+		NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+		meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
 
 		meta.setPages(book.toPages());
 
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
+		System.out.println(editConfig.toString());
+		System.out.println(book.getFrameID());
 		if (!editConfig.isHopper() && p.getInventory().getItem(editConfig.getSlot()).getType() == Material.WRITTEN_BOOK
-				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().hasLore()
-				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().getLore().get(0).replace("§", "")
-						.equals(bookValue)) {
+				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().getPersistentDataContainer().has(key,
+						PersistentDataType.STRING)
+				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().getPersistentDataContainer()
+						.get(key, PersistentDataType.STRING).equals(bookValue)) {
 			p.getInventory().getItem(editConfig.getSlot()).setItemMeta(meta);
 		} else if (editConfig.isHopper() && Frame.getFRAME(book.getFrameID()) != null
 				&& Frame.getFRAME(book.getFrameID()).getEntityFrame() != null) {
@@ -167,12 +165,5 @@ public class HopperConfiguring {
 		}
 		book.addSelf(book.getFrameID());
 		database.deleteEditHopper(player);
-	}
-
-	private static String convertToInvisibleString(String s) {
-		StringBuilder hidden = new StringBuilder();
-		for (char c : s.toCharArray())
-			hidden.append(ChatColor.COLOR_CHAR + "" + c);
-		return hidden.toString();
 	}
 }
