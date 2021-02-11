@@ -29,4 +29,7 @@ public class Item {
 		return displayName;
 	}
 
+	public String toString() {
+		return Integer.toString(id) + ":" + Integer.toString(stackSize) + ":" + name + ":" + displayName;
+	}
 }

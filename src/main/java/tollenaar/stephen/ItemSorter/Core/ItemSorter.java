@@ -1,13 +1,9 @@
 package tollenaar.stephen.ItemSorter.Core;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -19,15 +15,12 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.imageio.ImageIO;
-
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 
 import io.javalin.Javalin;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
@@ -37,7 +30,6 @@ import tollenaar.stephen.ItemSorter.Util.Server.Book;
 import tollenaar.stephen.ItemSorter.Util.Server.EventExceptionHandler;
 import tollenaar.stephen.ItemSorter.Util.Web.Attributes;
 import tollenaar.stephen.ItemSorter.Util.Web.HopperItems;
-import tollenaar.stephen.ItemSorter.Util.Web.Image;
 import tollenaar.stephen.ItemSorter.Util.Web.Item;
 
 public class ItemSorter extends JavaPlugin {
@@ -66,33 +58,33 @@ public class ItemSorter extends JavaPlugin {
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
 
 		try {
-			// getting all the items in minecraft and processing them into a
-			// java object
+			// Iterating over all the image files which corresponds to the items in minecraft
 			File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
 			File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
 			ZipFile jar = new ZipFile(plugin);
-			ZipEntry entry = jar.getEntry("web/items.json");
-
-			Type ITEM_TYPE = new TypeToken<List<Item>>() {
-			}.getType();
-
-			Gson gson = new Gson();
-
-			JsonReader reader = new JsonReader(new InputStreamReader(jar.getInputStream(entry)));
 
 			Enumeration<? extends ZipEntry> entries = jar.entries();
 
-			List<Image> tmp = new ArrayList<>();
+			List<Item> tmp = new ArrayList<>();
 			while (entries.hasMoreElements()) {
 				ZipEntry en = entries.nextElement();
-				if (en.getName().contains("images/gui/") && en.getName().split("images/gui/").length > 1) {
-					tmp.add(new Image(en.getName().replace("web/", ""), loadImage(jar.getInputStream(en))));
+				if (en.getName().contains("images/block/") && en.getName().split("images/block/").length > 1) {
+					// Formatting name and getting the max itemstack size
+					// Filtering out disabled items as well
+					String name = en.getName().replace("web/images/block/", "").replace(".png", "");
+					boolean cont = false;
+					for(String disabled : config.getStringList("disabledItems")) {
+						if(name.contains(disabled)) {
+							cont = true;
+						}
+					}
+					if(!cont) {
+						ItemStack t = new ItemStack(Material.matchMaterial(name));
+						tmp.add(new Item(en.hashCode(), t.getMaxStackSize(), name, WordUtils.capitalizeFully(name.toLowerCase().replace("_", " "))));
+					}
 				}
 			}
-
-			attributes = new Attributes(gson.fromJson(reader, ITEM_TYPE), tmp);
-
-			reader.close();
+			attributes = new Attributes(tmp, new ArrayList<>());
 			jar.close();
 		} catch (IOException e) {
 			Bukkit.getLogger().log(Level.SEVERE, e.toString());
@@ -217,6 +209,7 @@ public class ItemSorter extends JavaPlugin {
 				}
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
 						+ e.toString().replace("java.lang.", "") + ")");
 				ctx.render("/web/response.html");
@@ -240,6 +233,7 @@ public class ItemSorter extends JavaPlugin {
 					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
 						+ e.toString().replace("java.lang.", "") + ")");
 			}
@@ -256,15 +250,15 @@ public class ItemSorter extends JavaPlugin {
 		return database;
 	}
 
-	private BufferedImage loadImage(InputStream file) {
-		BufferedImage buff = null;
-		try {
-			buff = ImageIO.read(file);
-		} catch (IOException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			return null;
-		}
-		return buff;
-
-	}
+//	private BufferedImage loadImage(InputStream file) {
+//		BufferedImage buff = null;
+//		try {
+//			buff = ImageIO.read(file);
+//		} catch (IOException e) {
+//			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+//			return null;
+//		}
+//		return buff;
+//
+//	}
 }

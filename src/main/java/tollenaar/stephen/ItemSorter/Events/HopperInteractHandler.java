@@ -1,11 +1,9 @@
 package tollenaar.stephen.ItemSorter.Events;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -16,6 +14,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -64,8 +64,10 @@ public class HopperInteractHandler implements Listener {
 					// when replacing a configured book into an item frame
 				} else if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK) {
 					BookMeta meta = (BookMeta) event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
-					if (meta.hasLore()) {
-						String bookValue = meta.getLore().get(0).replace("§", "");
+					NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+					PersistentDataContainer container = meta.getPersistentDataContainer();
+					if (container.has(key, PersistentDataType.STRING)) {
+						String bookValue = container.get(key, PersistentDataType.STRING);
 						try {
 							Book b = Book.fromString(bookValue);
 							b.addSelf(frameID);
@@ -78,50 +80,46 @@ public class HopperInteractHandler implements Listener {
 					}
 				}
 				// forcing the book to open to the player
-			} else if (frame.getItem().getType() == Material.WRITTEN_BOOK && frame.getItem().getItemMeta().hasLore()) {
-				try {
-					ItemStack item = frame.getItem();
-					Player player = event.getPlayer();
-					Book book = Book.fromString(item.getItemMeta().getLore().get(0).replace("§", ""));
+			} else if (frame.getItem().getType() == Material.WRITTEN_BOOK) {
+				BookMeta metaFrame = (BookMeta) frame.getItem().getItemMeta();
+				NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+				PersistentDataContainer container = metaFrame.getPersistentDataContainer();
+				if (container.has(key, PersistentDataType.STRING)) {
+					String bookValue = container.get(key, PersistentDataType.STRING);
 
-					ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
-					BookMeta meta = (BookMeta) replaceItem.getItemMeta();
-					List<String> loreList = new ArrayList<>();
-					// hidden value
-					loreList.add(convertToInvisibleString(book.toString()));
-					meta.setTitle("HopperConfiguration");
-					meta.setAuthor("ItemSorter");
-					meta.setLore(loreList);
+					try {
+						Player player = event.getPlayer();
+						Book book = Book.fromString(bookValue);
 
-					meta.setPages(book.toPages());
+						ItemStack replaceItem = new ItemStack(Material.WRITTEN_BOOK);
+						BookMeta meta = (BookMeta) replaceItem.getItemMeta();
+						meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
+						meta.setTitle("HopperConfiguration");
+						meta.setAuthor("ItemSorter");
 
-					BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-							.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
-									plugin.getConfig().getString("URL")
-											+ plugin.getConfig().getString("editPageResponse") + "?configData="
-											+ event.getPlayer().getUniqueId().toString()))
-							.create();
-					meta.spigot().addPage(editPage);
-					replaceItem.setItemMeta(meta);
-					player.openBook(replaceItem);
+						meta.setPages(book.toPages());
 
-					database.savePlayer(player.getUniqueId(), book.toString(), true, null);
-					event.setCancelled(true);
-				} catch (ClassNotFoundException | IOException e) {
-					// no need for logging, if the item is a written book
-					// and has lore, but is not
-					// from this plugin it can throw this error.
+						BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
+								.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
+										plugin.getConfig().getString("URL")
+												+ plugin.getConfig().getString("editPageResponse") + "?configData="
+												+ event.getPlayer().getUniqueId().toString()))
+								.create();
+						meta.spigot().addPage(editPage);
+						replaceItem.setItemMeta(meta);
+						player.openBook(replaceItem);
+
+						database.savePlayer(player.getUniqueId(), book.toString(), true, null);
+						event.setCancelled(true);
+					} catch (ClassNotFoundException | IOException e) {
+						e.printStackTrace();
+						// no need for logging, if the item is a written book
+						// and has lore, but is not
+						// from this plugin it can throw this error.
+					}
 				}
 			}
 		}
-	}
-
-	private static String convertToInvisibleString(String s) {
-		StringBuilder hidden = new StringBuilder();
-		for (char c : s.toCharArray()) {
-			hidden.append(ChatColor.COLOR_CHAR + "" + c);
-		}
-		return hidden.toString();
 	}
 
 	// handling item frame place event
@@ -169,30 +167,37 @@ public class HopperInteractHandler implements Listener {
 
 	@EventHandler
 	public void onHopperEditEvent(PlayerInteractEvent event) {
-		if (event.hasItem() && event.getItem().getType() == Material.WRITTEN_BOOK
-				&& event.getItem().getItemMeta().hasLore()) {
-			try {
-				ItemStack item = event.getItem();
-				Player player = event.getPlayer();
-				Book book = Book.fromString(item.getItemMeta().getLore().get(0).replace("§", ""));
-				BookMeta meta = (BookMeta) item.getItemMeta();
-				meta.setPages(book.toPages());
+		if (event.hasItem() && event.getItem().getType() == Material.WRITTEN_BOOK) {
+			ItemStack item = event.getItem();
+			BookMeta meta = (BookMeta) event.getItem().getItemMeta();
+			NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+			if (container.has(key, PersistentDataType.STRING)) {
+				String bookValue = container.get(key, PersistentDataType.STRING);
+				try {
+					Player player = event.getPlayer();
+					Book book = Book.fromString(bookValue);
+					meta.setPages(book.toPages());
 
-				BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
-						.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
-								plugin.getConfig().getString("URL") + plugin.getConfig().getString("editPageResponse")
-										+ "?configData=" + player.getUniqueId().toString()))
-						.create();
+					BaseComponent[] editPage = new ComponentBuilder("To edit the configuration click here.")
+							.event(new ClickEvent(ClickEvent.Action.OPEN_URL,
+									plugin.getConfig().getString("URL")
+											+ plugin.getConfig().getString("editPageResponse") + "?configData="
+											+ event.getPlayer().getUniqueId().toString()))
+							.create();
 
-				meta.spigot().addPage(editPage);
-				item.setItemMeta(meta);
-				player.getInventory().setItem(event.getHand(), item);
-				database.savePlayer(event.getPlayer().getUniqueId(), book.toString(), false, event.getHand());
-			} catch (ClassNotFoundException | IOException e) {
-				// no need for logging, if the item is a written book and has
-				// lore, but is not
-				// from this plugin it can throw this error.
+					meta.spigot().addPage(editPage);
+					item.setItemMeta(meta);
+					player.getInventory().setItem(event.getHand(), item);
+					database.savePlayer(event.getPlayer().getUniqueId(), book.toString(), false, event.getHand());
+				} catch (ClassNotFoundException | IOException e) {
+					// no need for logging, if the item is a written book and h
+					// lore, but is n
+					// from this plugin it can throw this erro
+				}
+
 			}
+
 		}
 	}
 }
