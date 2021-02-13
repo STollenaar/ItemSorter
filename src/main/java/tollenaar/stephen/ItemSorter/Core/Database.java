@@ -191,6 +191,28 @@ public class Database {
 		editConfigs.forcePut(playerUUID, new EditConfig(bookValue, hopper, slot));
 	}
 
+	public void saveMigration(String bookValue, int frameID) {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("INSERT INTO `Migration` (`bookValue`, `frame_id`) VALUES (?,?);");
+
+			pst.setString(1, bookValue);
+			pst.setInt(2, frameID);
+			pst.execute();
+
+		} catch (SQLException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
+			}
+		}
+	}
+
 	public boolean hasSavedHopper(Location hopper) {
 		if (Hopper.getHOPPER(hopper) != null) {
 			return true;
@@ -526,6 +548,27 @@ public class Database {
 		editConfigs.remove(player);
 	}
 
+	public void deleteMigration(int frameID) {
+		PreparedStatement pst = null;
+		try {
+			pst = getConnection().prepareStatement("DELETE FROM `Migration` WHERE `frame_id`=?;");
+
+			pst.setInt(1, frameID);
+			pst.execute();
+
+		} catch (SQLException e) {
+			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, e.toString());
+			}
+		}
+	}
+
 	public void loadHoppers() {
 		PreparedStatement pst = null;
 		try {
@@ -671,11 +714,49 @@ public class Database {
 							ItemFrame fr = frame.getEntityFrame();
 							if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK
 									&& fr.getItem().getItemMeta().hasLore()) {
-								ItemMeta meta = fr.getItem().getItemMeta();
+								ItemStack item = fr.getItem();
+								ItemMeta meta = item.getItemMeta();
 								Book book = Book.fromString(meta.getLore().get(0).replace("§", ""));
 								meta.setLore(new ArrayList<>());
-								meta.getPersistentDataContainer().set(key,
-										PersistentDataType.STRING, book.toString());
+								meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
+								item.setItemMeta(meta);
+								fr.setItem(item);
+								saveMigration(book.toString(), frame.getId());
+							}
+						}
+
+					} catch (SQLException | ClassNotFoundException | IOException e) {
+						Bukkit.getLogger().log(Level.SEVERE, e.toString());
+					} finally {
+						try {
+							if (ps != null) {
+								ps.close();
+							}
+						} catch (SQLException e) {
+							Bukkit.getLogger().log(Level.SEVERE, e.toString());
+						}
+					}
+				} else if (rs.getString("version").contentEquals("1.4")
+						&& plugin.getServer().getVersion().contains("1.16.5")) {
+					plugin.getLogger().log(Level.WARNING, "new supported version detected for updated item lores");
+					PreparedStatement ps = null;
+					try {
+						ps = getConnection().prepareStatement("SELECT * FROM `Migration`;");
+
+						ResultSet r = ps.executeQuery();
+						NamespacedKey key = new NamespacedKey(plugin, "itemsorter");
+						while (r.next()) {
+							PreparedStatement p = getConnection()
+									.prepareStatement("SELECT * FROM `Frames` WHERE `id`=?;");
+							ResultSet rFrame = p.executeQuery();
+							Frame frame = new Frame(rFrame);
+							ItemFrame fr = frame.getEntityFrame();
+							if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK
+									&& fr.getItem().getItemMeta().hasLore()) {
+								ItemMeta meta = fr.getItem().getItemMeta();
+								Book book = Book.fromString(r.getString("bookValue"));
+								meta.setLore(new ArrayList<>());
+								meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
 								fr.getItem().setItemMeta(meta);
 							}
 						}
@@ -744,7 +825,10 @@ public class Database {
 					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
 					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
 					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS Version (version REAL PRIMARY KEY);");
+					+ "CREATE TABLE IF NOT EXISTS Version (version REAL PRIMARY KEY);"
+					+ "CREATE TABLE IF NOT EXISTS Migration "
+					+ "(bookValue TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
+					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
 			statement.close();
 		} catch (SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getMessage());

@@ -149,8 +149,6 @@ public class HopperConfiguring {
 
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
-		System.out.println(editConfig.toString());
-		System.out.println(book.getFrameID());
 		if (!editConfig.isHopper() && p.getInventory().getItem(editConfig.getSlot()).getType() == Material.WRITTEN_BOOK
 				&& p.getInventory().getItem(editConfig.getSlot()).getItemMeta().getPersistentDataContainer().has(key,
 						PersistentDataType.STRING)
