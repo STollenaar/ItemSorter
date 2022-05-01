@@ -146,7 +146,7 @@ public class HopperConfiguring {
 		meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, book.toString());
 
 		meta.setPages(book.toPages());
-
+		
 		// changing the item frame item
 		replaceItem.setItemMeta(meta);
 		if (!editConfig.isHopper() && p.getInventory().getItem(editConfig.getSlot()).getType() == Material.WRITTEN_BOOK

@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperInteractHandler;
@@ -56,7 +57,6 @@ public class ItemSorter extends JavaPlugin {
 		EventExceptionHandler.registerEvents(new HopperHandler(database), this, handler);
 		
 		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
-
 		try {
 			// Iterating over all the image files which corresponds to the items in minecraft
 			File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
@@ -119,26 +119,26 @@ public class ItemSorter extends JavaPlugin {
 
 	private static void addSoftwareLibrary(File file)
 			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, MalformedURLException {
-		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+		Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
 		method.setAccessible(true);
 		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
 	}
 
 	public void startWebServer() {
 
-		try {
-			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
-					+ "websocket-server-9.4.20.v20190813.jar"));
-		} catch (Exception e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		}
-
+//		try {
+//			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
+//					+ "websocket-server-9.4.46.v20220331.jar"));
+//		} catch (Exception e) {
+//			Bukkit.getLogger().log(Level.SEVERE, e.toString());
+//		}
+//
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
 		appItem = Javalin.create(config -> {
-			config.addStaticFiles("web");
+			config.addStaticFiles("web", Location.CLASSPATH);
 			config.showJavalinBanner = false;
-			config.requestCacheSize = 30000L;
+			config.maxRequestSize = 30000L;
 		}).start(config.getInt("port"));
 
 		appItemInitalize();
