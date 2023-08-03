@@ -2,7 +2,7 @@ package tollenaar.stephen.ItemSorter.Util.Web;
 
 import java.awt.image.BufferedImage;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
 public class Image {
 	
