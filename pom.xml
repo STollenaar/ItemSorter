@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tollenaar.stephen</groupId>
 	<artifactId>ItemSorter</artifactId>
-	<version>1.20.1</version>
+    <version>1.21.0</version>
 	<packaging>jar</packaging>
 	<name>ItemSorter</name>
 	<properties>
@@ -99,8 +99,8 @@
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
-			<version>1.20.1-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
+            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.javalin</groupId>
