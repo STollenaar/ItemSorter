@@ -35,230 +35,238 @@ import tollenaar.stephen.ItemSorter.Util.Web.Item;
 
 public class ItemSorter extends JavaPlugin {
 
-	private Database database;
-	private HopperConfiguring hopperConfig;
-	private FileConfiguration config;
-	private static Javalin appItem;
-	private static Attributes attributes;
-	private EventExceptionHandler handler;
+    private Database database;
+    private HopperConfiguring hopperConfig;
+    private FileConfiguration config;
+    private static Javalin appItem;
+    private static Attributes attributes;
+    private EventExceptionHandler handler;
 
-	@Override
-	public void onEnable() {
-		config = this.getConfig();
-		config.options().copyDefaults(true);
-		saveConfig();
+    @Override
+    public void onEnable() {
+        config = this.getConfig();
+        config.options().copyDefaults(true);
+        saveConfig();
 
-		handler  = new EventExceptionHandler(this);
-		database = new Database(this);
-		hopperConfig = new HopperConfiguring(this);
+        handler = new EventExceptionHandler(this);
+        database = new Database(this);
+        hopperConfig = new HopperConfiguring(this);
 
-		// registering events
-		EventExceptionHandler.registerEvents(new HopperInteractHandler(this), this, handler);
-		EventExceptionHandler.registerEvents(new HopperHandler(database), this, handler);
-		
-		getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
-		try {
-			// Iterating over all the image files which corresponds to the items in minecraft
-			File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
-			File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
-			ZipFile jar = new ZipFile(plugin);
+        // registering events
+        EventExceptionHandler.registerEvents(new HopperInteractHandler(this), this, handler);
+        EventExceptionHandler.registerEvents(new HopperHandler(database), this, handler);
 
-			Enumeration<? extends ZipEntry> entries = jar.entries();
+        getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
+        try {
+            // Iterating over all the image files which corresponds to the items in
+            // minecraft
+            File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
+            File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
+            ZipFile jar = new ZipFile(plugin);
 
-			List<Item> tmp = new ArrayList<>();
-			while (entries.hasMoreElements()) {
-				ZipEntry en = entries.nextElement();
-				if (en.getName().contains("images/block/") && en.getName().split("images/block/").length > 1) {
-					// Formatting name and getting the max itemstack size
-					// Filtering out disabled items as well
-					String name = en.getName().replace("web/images/block/", "").replace(".png", "");
-					boolean cont = false;
-					for(String disabled : config.getStringList("disabledItems")) {
-						if(name.contains(disabled)) {
-							cont = true;
-						}
-					}
-					if(!cont) {
-						ItemStack t = new ItemStack(Material.matchMaterial(name));
-						tmp.add(new Item(en.hashCode(), t.getMaxStackSize(), name, WordUtils.capitalizeFully(name.toLowerCase().replace("_", " "))));
-					}
-				}
-			}
-			attributes = new Attributes(tmp, new ArrayList<>());
-			jar.close();
-		} catch (IOException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			// disabling this server
-			getServer().getPluginManager().disablePlugin(this);
-			return;
-		}
+            Enumeration<? extends ZipEntry> entries = jar.entries();
 
-		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-			@Override
-			public void run() {
-				startWebServer();
-			}
-		});
+            List<Item> tmp = new ArrayList<>();
+            while (entries.hasMoreElements()) {
+                ZipEntry en = entries.nextElement();
+                if (en.getName().contains("images/block/") && en.getName().split("images/block/").length > 1) {
+                    // Formatting name and getting the max itemstack size
+                    // Filtering out disabled items as well
+                    String name = en.getName().replace("web/images/block/", "").replace(".png", "");
+                    boolean cont = false;
+                    for (String disabled : config.getStringList("disabledItems")) {
+                        if (name.contains(disabled)) {
+                            cont = true;
+                        }
+                    }
+                    if (!cont) {
+                        try {
+                            ItemStack t = new ItemStack(Material.matchMaterial(name));
+                            tmp.add(new Item(en.hashCode(), t.getMaxStackSize(), name,
+                                    WordUtils.capitalizeFully(name.toLowerCase().replace("_", " "))));
+                        } catch (Exception e) {
+                            System.out.println("Error for fetching: " + name);
+                        }
+                    }
+                }
+            }
+            attributes = new Attributes(tmp, new ArrayList<>());
+            jar.close();
+        } catch (IOException e) {
+            Bukkit.getLogger().log(Level.SEVERE, e.toString());
+            // disabling this server
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
-		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-			@Override
-			public void run() {
-				database.load();
-			}
-		});
-	}
+        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+            @Override
+            public void run() {
+                startWebServer();
+            }
+        });
 
-	@Override
-	public void onDisable() {
-		try {
-			appItem.stop();
-		} catch (Exception e) {
-			Bukkit.getLogger().log(Level.SEVERE, "appItem stopped with errors");
-		}
-	}
+        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+            @Override
+            public void run() {
+                database.load();
+            }
+        });
+    }
 
-	private static void addSoftwareLibrary(File file)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, MalformedURLException {
-		Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-		method.setAccessible(true);
-		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
-	}
+    @Override
+    public void onDisable() {
+        try {
+            appItem.stop();
+        } catch (Exception e) {
+            Bukkit.getLogger().log(Level.SEVERE, "appItem stopped with errors");
+        }
+    }
 
-	public void startWebServer() {
+    private static void addSoftwareLibrary(File file)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, MalformedURLException {
+        Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+        method.setAccessible(true);
+        method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
+    }
 
-//		try {
-//			addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() + File.separator + "lib" + File.separator
-//					+ "websocket-server-9.4.46.v20220331.jar"));
-//		} catch (Exception e) {
-//			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-//		}
-//
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
-		appItem = Javalin.create(config -> {
-			config.addStaticFiles("web", Location.CLASSPATH);
-			config.showJavalinBanner = false;
-			config.maxRequestSize = 30000L;
-		}).start(config.getInt("port"));
+    public void startWebServer() {
 
-		appItemInitalize();
+        // try {
+        // addSoftwareLibrary(new File(getDataFolder().getAbsoluteFile() +
+        // File.separator + "lib" + File.separator
+        // + "websocket-server-9.4.46.v20220331.jar"));
+        // } catch (Exception e) {
+        // Bukkit.getLogger().log(Level.SEVERE, e.toString());
+        // }
+        //
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(ItemSorter.class.getClassLoader());
+        appItem = Javalin.create(config -> {
+            config.addStaticFiles("web", Location.CLASSPATH);
+            config.showJavalinBanner = false;
+            config.maxRequestSize = 30000L;
+        }).start(config.getInt("port"));
 
-		Thread.currentThread().setContextClassLoader(classLoader);
-	}
+        appItemInitalize();
 
-	private void appItemInitalize() {
-		appItem.post("/" + config.getString("postConfigResponse"), ctx -> {
-			try {
-				String userCode = ctx.formParam("userCode");
-				int frameID = Integer.parseInt(ctx.formParam("frameID"));
-				if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
-					ctx.attribute("response",
-							"To many input options are selected. Please lower the amount. Current amount: "
-									+ ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
-				} else if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
-					hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
-					ctx.attribute("response", "Thank you. You can close this page now.");
-					database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
-				} else {
-					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
-						+ e.toString().replace("java.lang.", "") + ")");
-			}
-			ctx.render("/web/response.html");
-		});
+        Thread.currentThread().setContextClassLoader(classLoader);
+    }
 
-		appItem.get("/" + config.getString("initialPageResponse"), ctx -> {
-			try {
-				String userCode = ctx.queryParam("userCode");
-				int frameID = Integer.parseInt(ctx.queryParam("frameID"));
-				ctx.attribute("userCode", userCode);
-				ctx.attribute("frameID", frameID);
-				ctx.attribute("attributes", attributes);
-				ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
-				ctx.attribute("checkItems", new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, null));
-				ctx.render("/web/index.html");
-				if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
-					ctx.attribute("response", "You're not supposed to be here!!");
-					ctx.render("/web/response.html");
-				}
+    private void appItemInitalize() {
+        appItem.post("/" + config.getString("postConfigResponse"), ctx -> {
+            try {
+                String userCode = ctx.formParam("userCode");
+                int frameID = Integer.parseInt(ctx.formParam("frameID"));
+                if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
+                    ctx.attribute("response",
+                            "To many input options are selected. Please lower the amount. Current amount: "
+                                    + ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
+                } else if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+                    hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
+                    ctx.attribute("response", "Thank you. You can close this page now.");
+                    database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
+                } else {
+                    ctx.attribute("response", "Conflicting data while posting your configuration set up.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+                        + e.toString().replace("java.lang.", "") + ")");
+            }
+            ctx.render("/web/response.html");
+        });
 
-			} catch (Exception ex) {
-				ctx.attribute("response", "You're not supposed to be here!!");
-				ctx.render("/web/response.html");
-			}
+        appItem.get("/" + config.getString("initialPageResponse"), ctx -> {
+            try {
+                String userCode = ctx.queryParam("userCode");
+                int frameID = Integer.parseInt(ctx.queryParam("frameID"));
+                ctx.attribute("userCode", userCode);
+                ctx.attribute("frameID", frameID);
+                ctx.attribute("attributes", attributes);
+                ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
+                ctx.attribute("checkItems",
+                        new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, null));
+                ctx.render("/web/index.html");
+                if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+                    ctx.attribute("response", "You're not supposed to be here!!");
+                    ctx.render("/web/response.html");
+                }
 
-		});
+            } catch (Exception ex) {
+                ctx.attribute("response", "You're not supposed to be here!!");
+                ctx.render("/web/response.html");
+            }
 
-		appItem.get("/" + config.getString("editPageResponse"), ctx -> {
-			try {
-				String user = ctx.queryParam("configData");
-				String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
-				HopperItems checkItems = Book.fromString(bookValue).toItems();
-				ctx.attribute("bookValue", bookValue);
-				ctx.attribute("userCode", user);
-				ctx.attribute("attributes", attributes);
-				ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
-				ctx.attribute("checkItems", checkItems);
-				ctx.render("/web/index.html");
-				if (!database.hasSavedPlayer(UUID.fromString(user))) {
-					ctx.attribute("response", "You're not supposed to be here!!");
-					ctx.render("/web/response.html");
-				}
+        });
 
-			} catch (Exception e) {
-				e.printStackTrace();
-				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
-						+ e.toString().replace("java.lang.", "") + ")");
-				ctx.render("/web/response.html");
-			}
+        appItem.get("/" + config.getString("editPageResponse"), ctx -> {
+            try {
+                String user = ctx.queryParam("configData");
+                String bookValue = database.getSavedEdit(UUID.fromString(user)).getBookValue();
+                HopperItems checkItems = Book.fromString(bookValue).toItems();
+                ctx.attribute("bookValue", bookValue);
+                ctx.attribute("userCode", user);
+                ctx.attribute("attributes", attributes);
+                ctx.attribute("postAction", "./" + config.getString("postEditPageResponse"));
+                ctx.attribute("checkItems", checkItems);
+                ctx.render("/web/index.html");
+                if (!database.hasSavedPlayer(UUID.fromString(user))) {
+                    ctx.attribute("response", "You're not supposed to be here!!");
+                    ctx.render("/web/response.html");
+                }
 
-		});
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+                        + e.toString().replace("java.lang.", "") + ")");
+                ctx.render("/web/response.html");
+            }
 
-		appItem.post("/" + config.getString("postEditPageResponse"), ctx -> {
-			try {
-				String bookValue = ctx.formParam("bookValue");
-				String userCode = ctx.formParam("userCode");
-				if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
-					ctx.attribute("response",
-							"To many input options are selected. Please lower the amount. Current amount: "
-									+ ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
-				} else if (database.hasSavedPlayer(UUID.fromString(userCode))) {
-					hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
-					ctx.attribute("response", "Thank you. You can close this page now.");
-					database.deleteEditHopper(UUID.fromString(userCode));
-				} else {
-					ctx.attribute("response", "Conflicting data while posting your configuration set up.");
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				ctx.attribute("response", "Internal server error while posting your configuration set up. ("
-						+ e.toString().replace("java.lang.", "") + ")");
-			}
-			ctx.render("/web/response.html");
-		});
+        });
 
-		appItem.get("/", ctx -> {
-			ctx.attribute("response", "You're not supposed to be here!!");
-			ctx.render("/web/response.html");
-		});
-	}
+        appItem.post("/" + config.getString("postEditPageResponse"), ctx -> {
+            try {
+                String bookValue = ctx.formParam("bookValue");
+                String userCode = ctx.formParam("userCode");
+                if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
+                    ctx.attribute("response",
+                            "To many input options are selected. Please lower the amount. Current amount: "
+                                    + ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
+                } else if (database.hasSavedPlayer(UUID.fromString(userCode))) {
+                    hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
+                    ctx.attribute("response", "Thank you. You can close this page now.");
+                    database.deleteEditHopper(UUID.fromString(userCode));
+                } else {
+                    ctx.attribute("response", "Conflicting data while posting your configuration set up.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+                        + e.toString().replace("java.lang.", "") + ")");
+            }
+            ctx.render("/web/response.html");
+        });
 
-	public Database getDatabase() {
-		return database;
-	}
+        appItem.get("/", ctx -> {
+            ctx.attribute("response", "You're not supposed to be here!!");
+            ctx.render("/web/response.html");
+        });
+    }
 
-//	private BufferedImage loadImage(InputStream file) {
-//		BufferedImage buff = null;
-//		try {
-//			buff = ImageIO.read(file);
-//		} catch (IOException e) {
-//			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-//			return null;
-//		}
-//		return buff;
-//
-//	}
+    public Database getDatabase() {
+        return database;
+    }
+
+    // private BufferedImage loadImage(InputStream file) {
+    // BufferedImage buff = null;
+    // try {
+    // buff = ImageIO.read(file);
+    // } catch (IOException e) {
+    // Bukkit.getLogger().log(Level.SEVERE, e.toString());
+    // return null;
+    // }
+    // return buff;
+    //
+    // }
 }

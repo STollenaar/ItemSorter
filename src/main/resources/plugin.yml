@@ -1,6 +1,6 @@
 name: ItemSorter
 main: tollenaar.stephen.ItemSorter.Core.ItemSorter
-version: 6.3
+version: 6.4
 authors: [guitargun]
 loadbefore: [Storefront]
 description: able to sort items in a better way using hoppers
