@@ -1,3 +1,5 @@
 /target/
 /${output}/
+/output/
 images/block
+output/ItemSorter.jar
