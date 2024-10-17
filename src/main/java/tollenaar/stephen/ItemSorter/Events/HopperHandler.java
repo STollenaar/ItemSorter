@@ -1,5 +1,6 @@
 package tollenaar.stephen.ItemSorter.Events;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -18,129 +19,153 @@ public class HopperHandler implements Listener {
 
     private final Database database;
 
-	public HopperHandler(Database database) {
-		this.database = database;
-	}
+    public HopperHandler(Database database) {
+        this.database = database;
+    }
 
-	@EventHandler
-	public void onHopperInputEvent(InventoryMoveItemEvent event) {
-		boolean junctionCancelled = false;
+    @EventHandler
+    public void onHopperInputEvent(InventoryMoveItemEvent event) {
+        boolean junctionCancelled = false;
         Block hopper = event.getSource().getLocation().getBlock();
+        Location down = hopper.getRelative(BlockFace.DOWN).getLocation();
 
-		// flattening in case of multiple items in the same hopper inventory slot
-        if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
-			if (Hopper.isJunction(hopper)
-					&& !event.getDestination().getLocation().equals(hopper.getRelative(BlockFace.DOWN).getLocation())
-					&& database.hasSavedHopper(hopper.getRelative(BlockFace.DOWN).getLocation())) {
+        // Handle hopper junctions and multiple items in the same inventory slot
+        if (hopper.getType() == Material.HOPPER) {
+            Integer hopperID = getHopperID(down);
+            if (hopperID == null)
+                return;
 
-				int hopperID = (int) database.getSavedHopperByLocation(hopper.getRelative(BlockFace.DOWN).getLocation(),
-						"id");
-				Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
-				if (frame != null) {
-					Book book = Book.getBook(frame.getId());
-					// checking the configuration
-					if (book != null && book.allowItem(
-							((InventoryHolder) hopper.getRelative(BlockFace.DOWN).getState()).getInventory(),
-							event.getItem()) && !((org.bukkit.block.data.type.Hopper) hopper).isEnabled()) {
-						event.setCancelled(true);
-						return;
-					}
-				}
-			}
-		}
+            Frame frame = getFrameByHopperID(hopperID);
+            if (frame == null)
+                return;
 
-		// checking the source and seeing if it has to abide by any ratio rules
-		if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER
-				&& database.hasSavedHopper(event.getSource().getLocation()))
+            Book book = Book.getBook(frame.getId());
+            if (book == null)
+                return;
 
-		{
-            int hopperID = (int) database.getSavedHopperByLocation(event.getSource().getLocation(), "id");
+            // Handle junctions and disabled hoppers
+            if (Hopper.isJunction(hopper) &&
+                    !event.getDestination().getLocation().equals(down)) {
+                handleJunction(event, hopper, down, book);
+                return;
+            }
 
-			Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
-			if (frame != null) {
-				Book book = Book.getBook(frame.getId());
-				if (book != null && book.hasRatio() && Hopper.isJunction(hopper)) {
-					// checking the ratio and acting accordingly
-					if (!book.allowedMove(event.getDestination(), hopper)) {
-						event.setCancelled(true);
-						junctionCancelled = true;
-					} else {
-						event.setCancelled(false);
-						junctionCancelled = false;
-					}
-				}
-			}
-		}
+            // Check for ratio rules if applicable
+            if (book.hasRatio() && Hopper.isJunction(hopper)) {
+                if (!book.allowedMove(event.getDestination(), hopper)) {
+                    event.setCancelled(true);
+                    return;
+                } else {
+                    event.setCancelled(false);
+                    junctionCancelled = false;
+                }
+            }
 
-		// standard item filtering
-		if (event.getDestination().getLocation().getBlock().getType() == Material.HOPPER
-				&& database.hasSavedHopper(event.getDestination().getLocation())) {
-			int hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
+            // Standard item filtering and linked hopper logic
+            handleStandardItemFiltering(event, hopper, book, junctionCancelled);
+        }
+    }
 
-			Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
-			if (frame != null) {
-				Book book = Book.getBook(frame.getId());
-				// checking the configuration
-				if (book != null && !book.allowItem(event.getDestination(), event.getItem())) {
-                    Book linkedBook = book;
-                    Block linkedBlock = hopper;
-                    while (linkedBook.isLinkedBelow()) {
-                        if (database.hasSavedHopper(linkedBlock.getRelative(BlockFace.DOWN).getLocation())) {
-                            int linkedHopperID = (int) database.getSavedHopperByLocation(
-                                    event.getDestination().getLocation(),
-                                    "id");
+    private Integer getHopperID(Location location) {
+        return (Integer) database.getSavedHopperByLocation(location, "id");
+    }
 
-                            Frame linkedFrame = database.getSavedItemFrameByHopperID(linkedHopperID, "id");
-                            if (linkedFrame != null) {
-                                linkedBook = Book.getBook(linkedFrame.getId());
-                                if (book.allowItem(event.getDestination(), event.getItem())) {
-                                    return;
-                                } else {
-                                    continue;
-                                }
-                            }
+    private Frame getFrameByHopperID(Integer hopperID) {
+        return database.getSavedItemFrameByHopperID(hopperID, "id");
+    }
+
+    private void handleJunction(InventoryMoveItemEvent event, Block hopper, Location down, Book book) {
+        if (book.allowItem(((InventoryHolder) hopper.getRelative(BlockFace.DOWN).getState()).getInventory(),
+                event.getItem()) && !((org.bukkit.block.data.type.Hopper) hopper).isEnabled()) {
+            event.setCancelled(true);
+        }
+    }
+
+    private void handleStandardItemFiltering(InventoryMoveItemEvent event, Block hopper, Book book,
+            boolean junctionCancelled) {
+        if (event.getDestination().getLocation().getBlock().getType() != Material.HOPPER)
+            return;
+
+        Integer hopperID = getHopperID(event.getDestination().getLocation());
+        if (hopperID == null)
+            return;
+
+        Frame frame = getFrameByHopperID(hopperID);
+        if (frame == null) {
+            database.deleteHopper(event.getDestination().getLocation());
+            return;
+        }
+
+        if (!book.allowItem(event.getDestination(), event.getItem())) {
+            if (book.isLinkedBelow()) {
+                handleLinkedHopperLogic(event, hopper, book);
+            } else {
+                event.setCancelled(true);
+            }
+        } else if (!junctionCancelled) {
+            reverseRatioStep(event);
+        }
+    }
+
+    private void handleLinkedHopperLogic(InventoryMoveItemEvent event, Block hopper, Book book) {
+        Block linkedBlock = hopper;
+        Book linkedBook = book;
+
+        while (linkedBook.isLinkedBelow()) {
+            Integer linkedHopperID = getHopperID(linkedBlock.getRelative(BlockFace.DOWN).getLocation());
+            if (linkedHopperID == null)
+                break;
+
+            Frame linkedFrame = getFrameByHopperID(linkedHopperID);
+            if (linkedFrame != null) {
+                linkedBook = Book.getBook(linkedFrame.getId());
+                if (linkedBook.allowItem(event.getDestination(), event.getItem())) {
+                    return; // Allow item and exit if allowed in linked hopper
+                } else {
+                    linkedBlock = linkedBlock.getRelative(BlockFace.DOWN);
+                }
+            } else {
+                break;
+            }
+        }
+        // If linked hopper logic also fails to allow the item, cancel the event
+        event.setCancelled(true);
+    }
+
+    private void reverseRatioStep(InventoryMoveItemEvent event) {
+        Integer hopperID = getHopperID(event.getDestination().getLocation());
+        if (hopperID == null)
+            return;
+
+        Frame frame = getFrameByHopperID(hopperID);
+        if (frame == null)
+            return;
+
+        Book book = Book.getBook(frame.getId());
+        if (book.hasRatio()) {
+            book.reverseRatioStep();
+        }
+    }
+
+    // this checks if the hopper can pick up an item and is not in strict mode.
+    @EventHandler
+    public void onHopperPickUpEvent(InventoryPickupItemEvent event) {
+        if (event.getInventory().getLocation().getBlock().getType() == Material.HOPPER) {
+            Integer hopperID = (Integer) database.getSavedHopperByLocation(
+                    event.getInventory().getLocation(),
+                    "id");
+            if (hopperID != null) {
+                Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
+                if (frame != null) {
+                    Book book = Book.getBook(frame.getId());
+                    // checking the configuration
+                    if (book != null && book.isStrictMode()) {
+                        if (!book.allowItem(event.getInventory(), event.getItem().getItemStack())) {
+                            event.setCancelled(true);
                         }
-                        break;
                     }
-					event.setCancelled(true);
-					if (!junctionCancelled) {
-						// reversing the step of the ratio
-						hopperID = (int) database.getSavedHopperByLocation(event.getDestination().getLocation(), "id");
-
-						frame = database.getSavedItemFrameByHopperID(hopperID, "id");
-						if (frame != null) {
-							book = Book.getBook(frame.getId());
-							if (book.hasRatio()) {
-								book.reverseRatioStep();
-							}
-						}
-					}
-				} else if (!junctionCancelled) {
-					event.setCancelled(false);
-				}
-			} else {
-				database.deleteHopper(event.getDestination().getLocation());
-			}
-		}
-	}
-
-	// this checks if the hopper can pick up an item and is not in strict mode.
-	@EventHandler
-	public void onHopperPickUpEvent(InventoryPickupItemEvent event) {
-		if (event.getInventory().getLocation().getBlock().getType() == Material.HOPPER
-				&& database.hasSavedHopper(event.getInventory().getLocation())) {
-			int hopperID = (int) database.getSavedHopperByLocation(event.getInventory().getLocation(), "id");
-
-			Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
-			if (frame != null) {
-				Book book = Book.getBook(frame.getId());
-				// checking the configuration
-				if (book != null && book.isStrictMode()) {
-					if (!book.allowItem(event.getInventory(), event.getItem().getItemStack())) {
-                        event.setCancelled(true);
-					}
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 }

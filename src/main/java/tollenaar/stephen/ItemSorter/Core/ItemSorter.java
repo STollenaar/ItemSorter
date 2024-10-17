@@ -25,7 +25,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
-import io.javalin.http.Handler;
 import io.javalin.http.staticfiles.Location;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
@@ -60,13 +59,11 @@ public class ItemSorter extends JavaPlugin {
         EventExceptionHandler.registerEvents(new HopperHandler(database), this, handler);
 
         getCommand("ItemSorter").setExecutor(new CommandsHandler(this));
-        try {
-            // Iterating over all the image files which corresponds to the items in
-            // minecraft
-            File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
-            File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
-            ZipFile jar = new ZipFile(plugin);
-
+        // Iterating over all the image files which corresponds to the items in
+        // minecraft
+        File plugins = Bukkit.getPluginManager().getPlugin("ItemSorter").getDataFolder().getParentFile();
+        File plugin = new File(plugins.getAbsolutePath() + "/ItemSorter.jar");
+        try (ZipFile jar = new ZipFile(plugin)) {
             Enumeration<? extends ZipEntry> entries = jar.entries();
 
             List<Item> tmp = new ArrayList<>();
@@ -94,7 +91,6 @@ public class ItemSorter extends JavaPlugin {
                 }
             }
             attributes = new Attributes(tmp, new ArrayList<>());
-            jar.close();
         } catch (IOException e) {
             Bukkit.getLogger().log(Level.SEVERE, e.toString());
             // disabling this server
@@ -102,19 +98,9 @@ public class ItemSorter extends JavaPlugin {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-            @Override
-            public void run() {
-                startWebServer();
-            }
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(this, this::startWebServer);
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-            @Override
-            public void run() {
-                database.load();
-            }
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(this, database::load);
     }
 
     @Override
@@ -157,26 +143,23 @@ public class ItemSorter extends JavaPlugin {
     }
 
     private void appItemInitalize() {
-        appItem.post("/" + config.getString("postConfigResponse"), new Handler() {
-            @Override
-            public void handle(Context ctx) throws Exception {
-                try {
-                    String userCode = ctx.formParam("userCode");
-                    int frameID = Integer.parseInt(ctx.formParam("frameID"));
-                    if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
-                        hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
-                        ctx.attribute("response", "Thank you. You can close this page now.");
-                        database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
-                    } else {
-                        ctx.attribute("response", "Conflicting data while posting your configuration set up.");
-                    }
-                } catch (UnsupportedEncodingException | IllegalArgumentException e) {
-                    e.printStackTrace();
-                    ctx.attribute("response", "Internal server error while posting your configuration set up. ("
-                            + e.toString().replace("java.lang.", "") + ")");
+        appItem.post("/" + config.getString("postConfigResponse"), (Context ctx) -> {
+            try {
+                String userCode = ctx.formParam("userCode");
+                int frameID = Integer.parseInt(ctx.formParam("frameID"));
+                if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+                    hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
+                    ctx.attribute("response", "Thank you. You can close this page now.");
+                    database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
+                } else {
+                    ctx.attribute("response", "Conflicting data while posting your configuration set up.");
                 }
-                ctx.render("/web/response.html");
+            } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+                Bukkit.getLogger().log(Level.SEVERE, e.getMessage());
+                ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+                        + e.toString().replace("java.lang.", "") + ")");
             }
+            ctx.render("/web/response.html");
         });
 
         appItem.get("/" + config.getString("initialPageResponse"), ctx -> {
@@ -220,7 +203,7 @@ public class ItemSorter extends JavaPlugin {
                 }
 
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.SEVERE, e.getMessage());
                 ctx.attribute("response", "Internal server error while posting your configuration set up. ("
                         + e.toString().replace("java.lang.", "") + ")");
                 ctx.render("/web/response.html");
@@ -240,7 +223,7 @@ public class ItemSorter extends JavaPlugin {
                     ctx.attribute("response", "Conflicting data while posting your configuration set up.");
                 }
             } catch (IOException | ClassNotFoundException | IllegalArgumentException | NullPointerException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.SEVERE, e.getMessage());
                 ctx.attribute("response", "Internal server error while posting your configuration set up. ("
                         + e.toString().replace("java.lang.", "") + ")");
             }

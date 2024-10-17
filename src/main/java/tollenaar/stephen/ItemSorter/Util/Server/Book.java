@@ -168,11 +168,7 @@ public final class Book implements Serializable {
     public boolean allowItem(Inventory inventory, ItemStack item) {
         // filtering the items
         if (!inputConfig.isEmpty() && !hasInputConfig(item.getType())) {
-            if (!this.linkedBelow) {
-                return false;
-            } else {
-
-            }
+            return false;
         } else if (item.getItemMeta().hasEnchants() && !enchantments.isEmpty()
                 && !hasEnchantment(item.getItemMeta().getEnchants().keySet())) {
             return false;

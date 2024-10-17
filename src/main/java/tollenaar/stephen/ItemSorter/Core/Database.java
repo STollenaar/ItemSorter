@@ -213,42 +213,6 @@ public final class Database {
 		}
 	}
 
-	public boolean hasSavedHopper(Location hopper) {
-		if (Hopper.getHOPPER(hopper) != null) {
-			return true;
-		}
-
-		PreparedStatement pst = null;
-		try {
-			pst = getConnection().prepareStatement("SELECT * FROM `Hoppers` WHERE "
-					+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
-
-			pst.setDouble(1, hopper.getX());
-			pst.setDouble(2, hopper.getY());
-			pst.setDouble(3, hopper.getZ());
-			pst.setString(4, hopper.getWorld().getName());
-
-			ResultSet rs = pst.executeQuery();
-
-			if (rs.next()) {
-				new Hopper(rs);
-				return true;
-			}
-
-		} catch (SQLException e) {
-			Bukkit.getLogger().log(Level.SEVERE, e.toString());
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, e.toString());
-			}
-		}
-		return false;
-	}
-
 	public boolean hasSavedItemFrame(Location frameLocation) {
 		if (Frame.getFRAME(frameLocation) != null) {
 			return true;
@@ -349,7 +313,7 @@ public final class Database {
 				Bukkit.getLogger().log(Level.SEVERE, e.toString());
 			}
 		}
-		return false;
+        return null;
 	}
 
 	public Frame getSavedItemFrameByHopperID(int hopperID, String field) {
@@ -850,7 +814,7 @@ public final class Database {
 
 			}
         } catch (ClassNotFoundException | SQLException e) {
-			plugin.getLogger().log(Level.SEVERE, e.getClass().getName() + ": " + e.getMessage());
+            plugin.getLogger().log(Level.SEVERE, "{0}: {1}", new Object[] { e.getClass().getName(), e.getMessage() });
 		}
 
 		return connection;

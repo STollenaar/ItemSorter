@@ -110,8 +110,7 @@ public class HopperInteractHandler implements Listener {
 
 						database.savePlayer(player.getUniqueId(), book.toString(), true, null);
 						event.setCancelled(true);
-					} catch (ClassNotFoundException | IOException e) {
-						e.printStackTrace();
+                    } catch (ClassNotFoundException | IOException e) {
 						// no need for logging, if the item is a written book
 						// and has lore, but is not
 						// from this plugin it can throw this error.
@@ -132,7 +131,7 @@ public class HopperInteractHandler implements Listener {
 	// handling the hopper break
 	@EventHandler
 	public void onHopperBreakEvent(BlockBreakEvent event) {
-		if (event.getBlock().getType() == Material.HOPPER && database.hasSavedHopper(event.getBlock().getLocation())) {
+        if (event.getBlock().getType() == Material.HOPPER) {
 			database.deleteHopper(event.getBlock().getLocation());
 		}
 	}

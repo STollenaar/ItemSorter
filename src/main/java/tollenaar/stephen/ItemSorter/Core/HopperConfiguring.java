@@ -23,7 +23,7 @@ import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 
 public class HopperConfiguring {
     private final Database database;
-	private ItemSorter plugin;
+    private final ItemSorter plugin;
 
 	public HopperConfiguring(ItemSorter plugin) {
 		this.plugin = plugin;
