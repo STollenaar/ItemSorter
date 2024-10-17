@@ -29,6 +29,7 @@ public class Item {
 		return displayName;
 	}
 
+    @Override
 	public String toString() {
 		return Integer.toString(id) + ":" + Integer.toString(stackSize) + ":" + name + ":" + displayName;
 	}

@@ -2,6 +2,7 @@ package tollenaar.stephen.ItemSorter.Core;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -23,6 +24,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 import io.javalin.http.staticfiles.Location;
 import tollenaar.stephen.ItemSorter.Commands.CommandsHandler;
 import tollenaar.stephen.ItemSorter.Events.HopperHandler;
@@ -154,27 +157,26 @@ public class ItemSorter extends JavaPlugin {
     }
 
     private void appItemInitalize() {
-        appItem.post("/" + config.getString("postConfigResponse"), ctx -> {
-            try {
-                String userCode = ctx.formParam("userCode");
-                int frameID = Integer.parseInt(ctx.formParam("frameID"));
-                if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
-                    ctx.attribute("response",
-                            "To many input options are selected. Please lower the amount. Current amount: "
-                                    + ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
-                } else if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
-                    hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
-                    ctx.attribute("response", "Thank you. You can close this page now.");
-                    database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
-                } else {
-                    ctx.attribute("response", "Conflicting data while posting your configuration set up.");
+        appItem.post("/" + config.getString("postConfigResponse"), new Handler() {
+            @Override
+            public void handle(Context ctx) throws Exception {
+                try {
+                    String userCode = ctx.formParam("userCode");
+                    int frameID = Integer.parseInt(ctx.formParam("frameID"));
+                    if (database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
+                        hopperConfig.configureHopper(frameID, UUID.fromString(userCode), ctx.formParamMap());
+                        ctx.attribute("response", "Thank you. You can close this page now.");
+                        database.deletePlayerWithFrame(UUID.fromString(userCode), frameID);
+                    } else {
+                        ctx.attribute("response", "Conflicting data while posting your configuration set up.");
+                    }
+                } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+                    e.printStackTrace();
+                    ctx.attribute("response", "Internal server error while posting your configuration set up. ("
+                            + e.toString().replace("java.lang.", "") + ")");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                ctx.attribute("response", "Internal server error while posting your configuration set up. ("
-                        + e.toString().replace("java.lang.", "") + ")");
+                ctx.render("/web/response.html");
             }
-            ctx.render("/web/response.html");
         });
 
         appItem.get("/" + config.getString("initialPageResponse"), ctx -> {
@@ -186,14 +188,15 @@ public class ItemSorter extends JavaPlugin {
                 ctx.attribute("attributes", attributes);
                 ctx.attribute("postAction", "./" + config.getString("postConfigResponse"));
                 ctx.attribute("checkItems",
-                        new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, null));
+                        new HopperItems(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, false,
+                                null));
                 ctx.render("/web/index.html");
                 if (!database.hasSavedPlayerWithItemFrame(UUID.fromString(userCode), frameID)) {
                     ctx.attribute("response", "You're not supposed to be here!!");
                     ctx.render("/web/response.html");
                 }
 
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 ctx.attribute("response", "You're not supposed to be here!!");
                 ctx.render("/web/response.html");
             }
@@ -216,7 +219,7 @@ public class ItemSorter extends JavaPlugin {
                     ctx.render("/web/response.html");
                 }
 
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 ctx.attribute("response", "Internal server error while posting your configuration set up. ("
                         + e.toString().replace("java.lang.", "") + ")");
@@ -229,18 +232,14 @@ public class ItemSorter extends JavaPlugin {
             try {
                 String bookValue = ctx.formParam("bookValue");
                 String userCode = ctx.formParam("userCode");
-                if (ctx.formParamMap().size() > config.getInt("maxInputItems")) {
-                    ctx.attribute("response",
-                            "To many input options are selected. Please lower the amount. Current amount: "
-                                    + ctx.formParamMap().size() + " , max allowed: " + config.getInt("maxInputItems"));
-                } else if (database.hasSavedPlayer(UUID.fromString(userCode))) {
+                if (database.hasSavedPlayer(UUID.fromString(userCode))) {
                     hopperConfig.editConfigureHopper(UUID.fromString(userCode), bookValue, ctx.formParamMap());
                     ctx.attribute("response", "Thank you. You can close this page now.");
                     database.deleteEditHopper(UUID.fromString(userCode));
                 } else {
                     ctx.attribute("response", "Conflicting data while posting your configuration set up.");
                 }
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException | IllegalArgumentException | NullPointerException e) {
                 e.printStackTrace();
                 ctx.attribute("response", "Internal server error while posting your configuration set up. ("
                         + e.toString().replace("java.lang.", "") + ")");

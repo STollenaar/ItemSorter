@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -25,13 +28,9 @@ import tollenaar.stephen.ItemSorter.Core.Database;
 import tollenaar.stephen.ItemSorter.Core.ItemSorter;
 import tollenaar.stephen.ItemSorter.Util.Server.Book;
 
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
-
 public class HopperInteractHandler implements Listener {
-	private Database database;
-	private ItemSorter plugin;
+    private final Database database;
+    private final ItemSorter plugin;
 
 	public HopperInteractHandler(ItemSorter plugin) {
 		this.plugin = plugin;

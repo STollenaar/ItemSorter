@@ -16,7 +16,7 @@ import tollenaar.stephen.ItemSorter.Util.Server.Hopper;
 
 public class HopperHandler implements Listener {
 
-	private Database database;
+    private final Database database;
 
 	public HopperHandler(Database database) {
 		this.database = database;
@@ -25,10 +25,10 @@ public class HopperHandler implements Listener {
 	@EventHandler
 	public void onHopperInputEvent(InventoryMoveItemEvent event) {
 		boolean junctionCancelled = false;
+        Block hopper = event.getSource().getLocation().getBlock();
 
 		// flattening in case of multiple items in the same hopper inventory slot
-		if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
-			Block hopper = event.getSource().getLocation().getBlock();
+        if (event.getSource().getLocation().getBlock().getType() == Material.HOPPER) {
 			if (Hopper.isJunction(hopper)
 					&& !event.getDestination().getLocation().equals(hopper.getRelative(BlockFace.DOWN).getLocation())
 					&& database.hasSavedHopper(hopper.getRelative(BlockFace.DOWN).getLocation())) {
@@ -54,8 +54,7 @@ public class HopperHandler implements Listener {
 				&& database.hasSavedHopper(event.getSource().getLocation()))
 
 		{
-			int hopperID = (int) database.getSavedHopperByLocation(event.getSource().getLocation(), "id");
-			Block hopper = event.getSource().getLocation().getBlock();
+            int hopperID = (int) database.getSavedHopperByLocation(event.getSource().getLocation(), "id");
 
 			Frame frame = database.getSavedItemFrameByHopperID(hopperID, "id");
 			if (frame != null) {
@@ -83,6 +82,26 @@ public class HopperHandler implements Listener {
 				Book book = Book.getBook(frame.getId());
 				// checking the configuration
 				if (book != null && !book.allowItem(event.getDestination(), event.getItem())) {
+                    Book linkedBook = book;
+                    Block linkedBlock = hopper;
+                    while (linkedBook.isLinkedBelow()) {
+                        if (database.hasSavedHopper(linkedBlock.getRelative(BlockFace.DOWN).getLocation())) {
+                            int linkedHopperID = (int) database.getSavedHopperByLocation(
+                                    event.getDestination().getLocation(),
+                                    "id");
+
+                            Frame linkedFrame = database.getSavedItemFrameByHopperID(linkedHopperID, "id");
+                            if (linkedFrame != null) {
+                                linkedBook = Book.getBook(linkedFrame.getId());
+                                if (book.allowItem(event.getDestination(), event.getItem())) {
+                                    return;
+                                } else {
+                                    continue;
+                                }
+                            }
+                        }
+                        break;
+                    }
 					event.setCancelled(true);
 					if (!junctionCancelled) {
 						// reversing the step of the ratio
@@ -118,8 +137,7 @@ public class HopperHandler implements Listener {
 				// checking the configuration
 				if (book != null && book.isStrictMode()) {
 					if (!book.allowItem(event.getInventory(), event.getItem().getItemStack())) {
-						event.setCancelled(true);
-						return;
+                        event.setCancelled(true);
 					}
 				}
 			}

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -29,7 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.google.common.collect.Lists;
 
 public class EventExceptionHandler {
-	private JavaPlugin plugin;
+    private final JavaPlugin plugin;
 	private Date date;
 
 	public EventExceptionHandler(JavaPlugin plugin) {
@@ -45,12 +46,9 @@ public class EventExceptionHandler {
 		 * Represents an event executor that does nothing. This is not really necessary
 		 * in the current implementation of CraftBukkit, but we will take no chances.
 		 */
-		private static EventExecutor NULL_EXECUTOR = new EventExecutor() {
-			@Override
-			public void execute(Listener listener, Event event) throws EventException {
-				// Do nothing
-			}
-		};
+        private static final EventExecutor NULL_EXECUTOR = (Listener listener1, Event event) -> {
+            // Do nothing
+        };
 
 		private final RegisteredListener delegate;
 		private final EventExceptionHandler handler;
@@ -163,7 +161,7 @@ public class EventExceptionHandler {
 			} catch (NoSuchMethodException e) {
 				// Keep on searching
 				clazz = clazz.getSuperclass().asSubclass(Event.class);
-			} catch (Exception e) {
+            } catch (IllegalAccessException | SecurityException | InvocationTargetException e) {
 				throw new IllegalPluginAccessException(e.getMessage());
 			}
 		}
@@ -181,7 +179,7 @@ public class EventExceptionHandler {
 	public boolean handle(Throwable ex, Event event) {
 		if (plugin.getConfig().getBoolean("verboseLogging")
 				&& new Date().getTime() - this.date.getTime() >= 20*60*1000) {
-			plugin.getLogger().log(Level.SEVERE, "Error " + ex.getMessage() + " occured and has been logged");
+            plugin.getLogger().log(Level.SEVERE, "Error {0} occured and has been logged", ex.getMessage());
 		}
 
 		File logFoler = new File(plugin.getDataFolder(), "logs");

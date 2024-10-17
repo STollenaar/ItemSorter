@@ -10,14 +10,17 @@ public class HopperItems {
 	
 	private final boolean strictMode;
 	private final boolean preventOverflow;
+    private final boolean linkedBelow;
 	private final Ratio ratio;
 	
-	public HopperItems(List<String> items,List<String> enchantments, List<String> potions, boolean strictMode, boolean preventOverflow, Ratio ratio) {
+    public HopperItems(List<String> items, List<String> enchantments, List<String> potions, boolean strictMode,
+            boolean preventOverflow, boolean linkedBelow, Ratio ratio) {
 		this.items = items;
 		this.enchantments = enchantments;
 		this.potions = potions;
 		this.strictMode = strictMode;
 		this.preventOverflow = preventOverflow;
+        this.linkedBelow = linkedBelow;
 		this.ratio = ratio;
 	}
 
@@ -44,6 +47,10 @@ public class HopperItems {
 	public List<String> getPotions() {
 		return potions;
 	}
+
+    public boolean isLinkedBelow() {
+        return linkedBelow;
+    }
 	
 	
 

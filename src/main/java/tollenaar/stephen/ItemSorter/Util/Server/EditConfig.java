@@ -26,6 +26,7 @@ public class EditConfig {
 		return slot;
 	}
 
+    @Override
 	public String toString() {
 		return bookValue + " " + hopper + " " + slot;
 	}

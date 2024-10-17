@@ -22,7 +22,7 @@ import tollenaar.stephen.ItemSorter.Util.Server.EditConfig;
 import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 
 public class HopperConfiguring {
-	private Database database;
+    private final Database database;
 	private ItemSorter plugin;
 
 	public HopperConfiguring(ItemSorter plugin) {
@@ -52,17 +52,11 @@ public class HopperConfiguring {
 				book.addPotion(PotionEffectType.getByName(value));
 			}
 		}
-		if (formParams.keySet().contains("strict_mode")) {
-			book.setStrictMode(true);
-		} else {
-			book.setStrictMode(false);
-		}
-		if (formParams.keySet().contains("prevent_overflow")) {
-			book.setPreventOverflow(true);
-		} else {
-			book.setPreventOverflow(false);
-		}
-		if (formParams.keySet().contains("junction_ratio")) {
+        book.setStrictMode(formParams.keySet().contains("strict_mode"));
+        book.setPreventOverflow(formParams.keySet().contains("prevent_overflow"));
+        book.setLinkedBelow(formParams.keySet().contains("linked_below"));
+
+        if (formParams.keySet().contains("junction_ratio")) {
 			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
 			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
 
@@ -112,17 +106,11 @@ public class HopperConfiguring {
 				book.addPotion(PotionEffectType.getByName(value));
 			}
 		}
-		if (formParams.keySet().contains("strict_mode")) {
-			book.setStrictMode(true);
-		} else {
-			book.setStrictMode(false);
-		}
-		if (formParams.keySet().contains("prevent_overflow")) {
-			book.setPreventOverflow(true);
-		} else {
-			book.setPreventOverflow(false);
-		}
-		if (formParams.keySet().contains("junction_ratio")) {
+        book.setStrictMode(formParams.keySet().contains("strict_mode"));
+        book.setPreventOverflow(formParams.keySet().contains("prevent_overflow"));
+        book.setLinkedBelow(formParams.keySet().contains("linked_below"));
+
+        if (formParams.keySet().contains("junction_ratio")) {
 			int first = Integer.parseInt(formParams.get("firstRatio").get(0));
 			int second = Integer.parseInt(formParams.get("secondRatio").get(0));
 

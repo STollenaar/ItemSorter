@@ -35,13 +35,13 @@ import tollenaar.stephen.ItemSorter.Util.Server.EditConfig;
 import tollenaar.stephen.ItemSorter.Util.Server.Frame;
 import tollenaar.stephen.ItemSorter.Util.Server.Hopper;
 
-public class Database {
+public final class Database {
 
-	private ItemSorter plugin;
+    private final ItemSorter plugin;
 	private Connection connection;
 
 	private static final String VERSION = "1.4";
-	private static BiMap<UUID, EditConfig> editConfigs = HashBiMap.create();
+    private static final BiMap<UUID, EditConfig> editConfigs = HashBiMap.create();
 
 	public Database(ItemSorter plugin) {
 		this.plugin = plugin;
@@ -460,34 +460,30 @@ public class Database {
 	public void deleteHopper(Location hopperLocation) {
 		Hopper.removeHOPPER(hopperLocation);
 
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            PreparedStatement pst = null;
+            try {
+                pst = getConnection().prepareStatement("DELETE FROM `Hoppers` WHERE "
+                        + "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
 
-			@Override
-			public void run() {
-				PreparedStatement pst = null;
-				try {
-					pst = getConnection().prepareStatement("DELETE FROM `Hoppers` WHERE "
-							+ "`hopperX`=? AND `hopperY`=? AND `hopperZ`=? AND `hopperWorld`=?;");
+                pst.setDouble(1, hopperLocation.getX());
+                pst.setDouble(2, hopperLocation.getY());
+                pst.setDouble(3, hopperLocation.getZ());
+                pst.setString(4, hopperLocation.getWorld().getName());
+                pst.execute();
 
-					pst.setDouble(1, hopperLocation.getX());
-					pst.setDouble(2, hopperLocation.getY());
-					pst.setDouble(3, hopperLocation.getZ());
-					pst.setString(4, hopperLocation.getWorld().getName());
-					pst.execute();
-
-				} catch (SQLException e) {
-					Bukkit.getLogger().log(Level.SEVERE, e.toString());
-				} finally {
-					try {
-						if (pst != null) {
-							pst.close();
-						}
-					} catch (SQLException e) {
-						Bukkit.getLogger().log(Level.SEVERE, e.toString());
-					}
-				}
-			}
-		});
+            } catch (SQLException e) {
+                Bukkit.getLogger().log(Level.SEVERE, e.toString());
+            } finally {
+                try {
+                    if (pst != null) {
+                        pst.close();
+                    }
+                } catch (SQLException e) {
+                    Bukkit.getLogger().log(Level.SEVERE, e.toString());
+                }
+            }
+        });
 	}
 
 	public void deleteFrame(Location frameLocation) {
@@ -641,7 +637,7 @@ public class Database {
 							"Old non supported version detected, updating current deployed books. This can take a while!");
 					for (Location loc : Frame.getFrames()) {
 						ItemFrame fr = Frame.getFRAME(loc).getEntityFrame();
-						if (fr != null && fr.getItem() != null && fr.getItem().getType() == Material.WRITTEN_BOOK) {
+                        if (fr != null && fr.getItem().getType() == Material.WRITTEN_BOOK) {
 							ItemStack item = fr.getItem();
 							BookMeta meta = (BookMeta) item.getItemMeta();
 
@@ -812,24 +808,22 @@ public class Database {
 
 	public void initialize() {
 		connection = getConnection();
-		try {
-			Statement statement = connection.createStatement();
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS Hoppers (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-					+ " hopperX REAL NOT NULL," + " hopperY REAL NOT NULL," + " hopperZ REAL NOT NULL,"
-					+ " hopperWorld TEXT NOT NULL);"
-					+ "CREATE TABLE IF NOT EXISTS Frames (id INTEGER PRIMARY KEY AUTOINCREMENT, hopper_id INTEGER NOT NULL, "
-					+ "frameX REAL NOT NULL," + " frameY REAL NOT NULL,"
-					+ " frameZ REAL NOT NULL, frameYaw REAL NOT NULL, framePitch REAL NOT NULL,"
-					+ " frameWorld TEXT NOT NULL," + " CONSTRAINT fk_Hoppers" + " FOREIGN KEY (hopper_id)"
-					+ " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS UserConfigs "
-					+ "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
-					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
-					+ "CREATE TABLE IF NOT EXISTS Version (version REAL PRIMARY KEY);"
-					+ "CREATE TABLE IF NOT EXISTS Migration "
-					+ "(bookValue TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
-					+ "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
-			statement.close();
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Hoppers (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " hopperX REAL NOT NULL," + " hopperY REAL NOT NULL," + " hopperZ REAL NOT NULL,"
+                    + " hopperWorld TEXT NOT NULL);"
+                    + "CREATE TABLE IF NOT EXISTS Frames (id INTEGER PRIMARY KEY AUTOINCREMENT, hopper_id INTEGER NOT NULL, "
+                    + "frameX REAL NOT NULL," + " frameY REAL NOT NULL,"
+                    + " frameZ REAL NOT NULL, frameYaw REAL NOT NULL, framePitch REAL NOT NULL,"
+                    + " frameWorld TEXT NOT NULL," + " CONSTRAINT fk_Hoppers" + " FOREIGN KEY (hopper_id)"
+                    + " REFERENCES Hoppers(id)" + " ON DELETE CASCADE);" + "PRAGMA foreign_keys=ON;"
+                    + "CREATE TABLE IF NOT EXISTS UserConfigs "
+                    + "(userUUID TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
+                    + "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;"
+                    + "CREATE TABLE IF NOT EXISTS Version (version REAL PRIMARY KEY);"
+                    + "CREATE TABLE IF NOT EXISTS Migration "
+                    + "(bookValue TEXT NOT NULL, frame_id INTEGER UNIQUE NOT NULL, "
+                    + "CONSTRAINT fk_Frames FOREIGN KEY (frame_id) REFERENCES Frames(id) ON DELETE CASCADE); PRAGMA foreign_keys=ON;");
 		} catch (SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getMessage());
 		}
@@ -855,7 +849,7 @@ public class Database {
 				connection = DriverManager.getConnection("jdbc:sqlite:" + db);
 
 			}
-		} catch (Exception e) {
+        } catch (ClassNotFoundException | SQLException e) {
 			plugin.getLogger().log(Level.SEVERE, e.getClass().getName() + ": " + e.getMessage());
 		}
 

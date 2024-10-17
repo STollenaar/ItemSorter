@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-public class Image {
+public final class Image {
 	
 	private String src;
 	private String name;

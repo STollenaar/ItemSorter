@@ -56,6 +56,15 @@
                                 </div>
                             </li>
                             <li>
+                                <div style="cursor: pointer;" class="tooltip" th:classappend="${checkItems.linkedBelow}? 'active'"
+                                    th:onclick="|changeInput(event,'linked_below')|">
+                                    <input type="checkbox" id="Ilinked_below" style="display: none" th:checked="${checkItems.linkedBelow} ?'true'"
+                                        name="linked_below" value="linked_below" />
+                                    <span th:text="|Linked Below|"></span>
+                                    <span class="tooltiptext">When enabled, will link with the itemsorter hopper below for smarter sorting.</span>
+                                </div>
+                                </li>
+                                <li>
                                 <div style="cursor: pointer;" class="tooltip" th:classappend="${checkItems.ratio}? 'active'">
                                     <input type="checkbox" id="Ijunction_ratio" style="display: none" th:checked="${checkItems.ratio} ?'true'" name="junction_ratio" value="junction_ratio" />
                                     <span th:text="|Junction Ratio|"></span>
