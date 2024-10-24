@@ -196,7 +196,8 @@ public final class Book implements Serializable {
 
     private boolean hasRoom(Inventory inventory, ItemStack item) {
         return Arrays.stream(inventory.getStorageContents())
-                .anyMatch(itemStack -> itemStack == null || item.getAmount() < itemStack.getMaxStackSize());
+                .anyMatch(itemStack -> itemStack == null
+                        || itemStack.getAmount() + item.getAmount() <= itemStack.getMaxStackSize());
     }
 
     // sorting the correct move detail
@@ -277,7 +278,7 @@ public final class Book implements Serializable {
     }
 
     public boolean hasPreventOverflow() {
-        return preventOverflow;
+        return this.preventOverflow;
     }
 
     public void setPreventOverflow(boolean preventOverflow) {
