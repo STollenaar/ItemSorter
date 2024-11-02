@@ -14,7 +14,7 @@
     /* Add some padding */
     border: 1px solid #ddd;
     /* Add a grey border */
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     /* Add some space below the input */
 }
 
@@ -22,7 +22,6 @@
     /* Remove default list styling */
     list-style-type: none;
     padding: 0;
-    margin: 0;
     height: 70vh;
     overflow-y: scroll
 }
@@ -39,6 +38,11 @@
     padding: 12px;
 }
 
+.filterSelected {
+    background-image: url("../images/sign.png");
+    background-size: contain;
+    padding: 12px;
+}
 .searchUL li div img {
     width: 32px;
 }

@@ -26,6 +26,10 @@
             <div id="HopperInput" class="tabcontent">
                 <h2>Select all the items the hopper will accept</h2>
                 <input type="text" id="searchInput" onkeyup="itemFilter()" placeholder="Search for items..">
+                <label class="filterSelected">
+                    <input type="checkbox" id="filterSelected" onclick="filterSprites(this)">
+                    Show only filtered items
+                </label>
                 <ul id="searchUL" class="searchUL">
                     <li th:each="item : ${attributes.items}" th:object="${item}" th:if="${item.name} != 'air'">
                         <div style="cursor: pointer;" th:class="${#lists.contains(checkItems.items, item.name)}? ' active'" th:onclick="|changeInput(event,'${item.name}')|">
